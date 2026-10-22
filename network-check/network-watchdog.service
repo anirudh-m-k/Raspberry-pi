@@ -1,0 +1,17 @@
+[Unit]
+Description=Network Watchdog - Reboot on 5min internet loss (1/hr cooldown)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/network_watchdog.sh
+Restart=always
+RestartSec=10
+User=root
+Environment=DRY_RUN=0
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
