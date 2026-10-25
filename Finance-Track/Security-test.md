@@ -348,10 +348,10 @@ def validate_password_strength(password):
 - **Affected File:** `/home/anirudh/Documents/Project/Finance-Track/.env:1-10`
 
 ```
-SECRET_KEY=dev-secret-key-change-in-production
+SECRET_KEY=<key>
 MAIL_USERNAME=ab9066001@smtp-brevo.com
 MAIL_PASSWORD=<key>
-JWT_SECRET_KEY=dev-jwt-secret-change-in-production
+JWT_SECRET_KEY=<key>
 ```
 
 **Impact:** Real Brevo SMTP credentials are committed in the `.env` file. While `.env` is in `.gitignore`, it exists on disk and may have been committed previously. Anyone with access to the server can read these credentials and send emails as the application.
