@@ -1,0 +1,126 @@
+{
+  "status": "OK",
+  "provider": "eKart",
+  "trackingNumber": "FMPP4392861093",
+  "data": {
+    "booking_details": {
+      "article_number": "FMPP4392861093",
+      "booked_at": "Farukhnagar",
+      "booked_on": "2026-10-19T00:00:00Z",
+      "origin_city": "Farukhnagar",
+      "destination_city": "TRIVANDRUM",
+      "origin_pincode": null,
+      "destination_pincode": null,
+      "tariff": null,
+      "article_type": "UNKNOWN",
+      "service_type": null,
+      "delivery_location": "TRIVANDRUM",
+      "expected_delivery_date": "2026-10-25",
+      "receiver_name": null,
+      "merchant_name": null,
+      "delivery_confirmed_on": null
+    },
+    "tracking_details": [
+      {
+        "date": "2026-10-23T07:40:00Z",
+        "time": "07:40",
+        "office": "TRIVANDRUM",
+        "officeid": null,
+        "event": "Out for delivery",
+        "status": "out_for_delivery",
+        "icon": "fa-motorcycle",
+        "iconClass": "dispatched"
+      },
+      {
+        "date": "2026-10-23T00:00:00Z",
+        "time": "06:35:52",
+        "office": "TRIVANDRUM",
+        "officeid": null,
+        "event": "Received at Petta_PEA",
+        "status": "in_transit",
+        "icon": "fa-inbox",
+        "iconClass": "received"
+      },
+      {
+        "date": "2026-10-22T00:00:00Z",
+        "time": "23:39:51",
+        "office": "TRIVANDRUM",
+        "officeid": null,
+        "event": "Dispatched to Petta_PEA",
+        "status": "in_transit",
+        "icon": "fa-paper-plane",
+        "iconClass": "dispatched"
+      },
+      {
+        "date": "2026-10-22T00:00:00Z",
+        "time": "22:09:33",
+        "office": "ERNAKULAM",
+        "officeid": null,
+        "event": "Received at MotherHub_COK",
+        "status": "in_transit",
+        "icon": "fa-inbox",
+        "iconClass": "received"
+      },
+      {
+        "date": "2026-10-22T00:00:00Z",
+        "time": "01:31:04",
+        "office": "ERNAKULAM",
+        "officeid": null,
+        "event": "Received at MotherHub_COK",
+        "status": "in_transit",
+        "icon": "fa-inbox",
+        "iconClass": "received"
+      },
+      {
+        "date": "2026-10-19T00:00:00Z",
+        "time": "08:57:39",
+        "office": "ERNAKULAM",
+        "officeid": null,
+        "event": "Dispatched to MotherHub_COK",
+        "status": "in_transit",
+        "icon": "fa-paper-plane",
+        "iconClass": "dispatched"
+      },
+      {
+        "date": "2026-10-19T00:00:00Z",
+        "time": "02:02:37",
+        "office": "FARUKHNAGAR",
+        "officeid": null,
+        "event": "Received at Motherhub_GGN",
+        "status": "in_transit",
+        "icon": "fa-inbox",
+        "iconClass": "received"
+      },
+      {
+        "date": "2026-10-19T00:00:00Z",
+        "time": "01:50:20",
+        "office": "FARUKHNAGAR",
+        "officeid": null,
+        "event": "Dispatched to Motherhub_GGN",
+        "status": "in_transit",
+        "icon": "fa-paper-plane",
+        "iconClass": "dispatched"
+      },
+      {
+        "date": "2026-10-19T00:00:00Z",
+        "time": "01:50:13",
+        "office": "Farukhnagar",
+        "officeid": null,
+        "event": "Shipment Created",
+        "status": "booked",
+        "icon": "fa-box-open",
+        "iconClass": "pickup"
+      }
+    ],
+    "del_status": "Out for Delivery",
+    "overall_state": "out_for_delivery",
+    "overall_status": "Out for Delivery",
+    "status_ui": {
+      "phrase": "out for delivery",
+      "variant": "",
+      "badgeVariant": "out-for-delivery",
+      "tense": "present"
+    },
+    "rto_complete": false
+  }
+}

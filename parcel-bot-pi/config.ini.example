@@ -1,0 +1,36 @@
+# ---------------------------------------------------------------------------
+# Parcel Tracker bot — configuration
+#
+# Environment variables override everything here:
+#   TELEGRAM_BOT_TOKEN, DISCORD_WEBHOOK_URL, ADMIN_USER_IDS
+#
+# After editing:  sudo systemctl restart parcel-bot
+# Keep this file private:  sudo chmod 640 /etc/parcel-bot/config.ini
+# ---------------------------------------------------------------------------
+
+[telegram]
+# Token from @BotFather (Telegram → @BotFather → /newbot).
+# Example: 123456789:AAH8x...   (keep the colon)
+token = PASTE_BOT_TOKEN_HERE
+
+[discord]
+# Optional. Admin-created reminders use this automatically instead of asking
+# for a webhook in chat. Leave blank to disable.
+# Example: https://discord.com/api/webhooks/1234/abcd...
+webhook_url =
+
+[admin]
+# Comma-separated numeric Telegram chat ids with owner access.
+# Send /start to the bot once, then look for this in the log:
+#   ! new user 123456789 · @yourhandle
+user_ids =
+
+[limits]
+# Free tier for everyone who is not an admin.
+free_tracks = 2
+window_hours = 3
+
+[tracking]
+# live     = real lookups against speedposttrack.io  (production)
+# fixtures = offline snapshots in ./fixtures         (testing only)
+mode = live

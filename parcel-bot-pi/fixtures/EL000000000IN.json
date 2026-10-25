@@ -1,0 +1,39 @@
+{
+  "status": "OK",
+  "provider": "India Post",
+  "trackingNumber": "EL000000000IN",
+  "data": {
+    "booking_details": {
+      "article_number": null,
+      "article_type": null,
+      "booking_date": null,
+      "booking_office_name": null,
+      "booking_pin": null,
+      "destination_office_name": null,
+      "destination_pincode": null,
+      "destination_city": null,
+      "weight_value": null,
+      "tariff": "0",
+      "cod_amount": "0",
+      "source_country": null,
+      "destination_country": null,
+      "delivery_confirmed_on": null,
+      "tariff_mask_status": false,
+      "origin_pincode": null,
+      "origin_city": null,
+      "booked_at": null,
+      "booked_on": null
+    },
+    "tracking_details": [],
+    "del_status": "Booked",
+    "overall_state": "no_data",
+    "overall_status": "Tracking Not Available",
+    "status_ui": {
+      "phrase": "not trackable yet",
+      "variant": "status-pending",
+      "badgeVariant": "pending",
+      "tense": "present"
+    },
+    "rto_complete": false
+  }
+}

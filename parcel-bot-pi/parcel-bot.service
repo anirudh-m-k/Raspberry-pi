@@ -1,0 +1,42 @@
+[Unit]
+Description=Parcel Tracker Telegram Bot
+Documentation=file:///opt/parcel-bot/README.md
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=parcelbot
+Group=parcelbot
+WorkingDirectory=/opt/parcel-bot
+ExecStart=/opt/parcel-bot/.venv/bin/python /opt/parcel-bot/parcel_bot.py \
+    --run \
+    --config /etc/parcel-bot/config.ini \
+    --db /var/lib/parcel-bot/parcel_bot.db
+
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+# optional: same variables as config.ini, useful if you prefer env over files
+EnvironmentFile=-/etc/parcel-bot/env
+
+Restart=always
+RestartSec=10
+TimeoutStopSec=20
+
+# --- hardening -----------------------------------------------------------
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LockPersonality=true
+
+# writable state (SQLite database)
+StateDirectory=parcel-bot
+StateDirectoryMode=0750
+
+[Install]
+WantedBy=multi-user.target

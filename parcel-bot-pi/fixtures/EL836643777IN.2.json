@@ -1,0 +1,148 @@
+{
+  "status": "OK",
+  "provider": "India Post",
+  "trackingNumber": "EL836643777IN",
+  "data": {
+    "booking_details": {
+      "article_number": "EL836643777IN",
+      "article_type": "SP_INLAND_DOC",
+      "booking_date": "2026-10-22T14:13:04Z",
+      "booking_office_name": "Kulathur SO Thiruvananthapuram",
+      "booking_pin": "695583",
+      "destination_office_name": "Adyar S.O     Chennai",
+      "destination_pincode": "600020",
+      "destination_city": "CHENNAI",
+      "weight_value": "320",
+      "tariff": "96",
+      "cod_amount": "0",
+      "source_country": "INDIA",
+      "destination_country": "INDIA",
+      "delivery_confirmed_on": "2026-10-23T09:12:00Z",
+      "tariff_mask_status": false,
+      "origin_pincode": "695583",
+      "origin_city": "Kulathur SO Thiruvananthapuram",
+      "booked_at": "Kulathur SO Thiruvananthapuram",
+      "booked_on": "2026-10-22T14:13:04Z"
+    },
+    "tracking_details": [
+      {
+        "date": "2026-10-23T09:12:00.000Z",
+        "time": "09:12",
+        "office": "Adyar S.O Chennai",
+        "eventcode": "ITEM_DELIVER",
+        "event": "Item Delivered",
+        "officeid": "22660255",
+        "remarks": "Delivered to addressee",
+        "status": "delivered",
+        "icon": "fa-circle-check",
+        "iconClass": "delivered"
+      },
+      {
+        "date": "2026-10-22T19:51:27.815Z",
+        "time": "19:51",
+        "office": "Trivandrum NSH",
+        "eventcode": "BAG_CLOSE",
+        "event": "Item bagged",
+        "officeid": "22460001",
+        "remarks": "",
+        "status": "in_transit",
+        "icon": "fa-box",
+        "iconClass": "in-transit"
+      },
+      {
+        "date": "2026-10-22T18:53:39.256Z",
+        "time": "18:53",
+        "office": "Trivandrum NSH",
+        "eventcode": "BAG_OPEN",
+        "event": "Item Received",
+        "officeid": "22460001",
+        "remarks": "",
+        "status": "in_transit",
+        "icon": "fa-inbox",
+        "iconClass": "received"
+      },
+      {
+        "date": "2026-10-22T18:41:42.587Z",
+        "time": "18:41",
+        "office": "Trivandrum NSH",
+        "eventcode": "TMO_RECEIVE",
+        "event": "Bag Received",
+        "officeid": "22460001",
+        "remarks": "",
+        "status": "in_transit",
+        "icon": "fa-inbox",
+        "iconClass": "received"
+      },
+      {
+        "date": "2026-10-22T18:33:25.868Z",
+        "time": "18:33",
+        "office": "Trivandrum Central Rs TMO",
+        "eventcode": "BAG_DISPATCH",
+        "event": "Item Dispatched",
+        "officeid": "22680001",
+        "remarks": "",
+        "status": "in_transit",
+        "icon": "fa-paper-plane",
+        "iconClass": "dispatched"
+      },
+      {
+        "date": "2026-10-22T18:32:38.097Z",
+        "time": "18:32",
+        "office": "Trivandrum Central Rs TMO",
+        "eventcode": "Bag_Forward",
+        "event": "Bag Received for Forwarding",
+        "officeid": "22680001",
+        "remarks": "",
+        "status": "in_transit",
+        "icon": "fa-inbox",
+        "iconClass": "received"
+      },
+      {
+        "date": "2026-10-22T14:48:08.889Z",
+        "time": "14:48",
+        "office": "Kulathur SO Thiruvananthapuram",
+        "eventcode": "BAG_DISPATCH",
+        "event": "Item Dispatched",
+        "officeid": "22660255",
+        "remarks": "",
+        "status": "in_transit",
+        "icon": "fa-paper-plane",
+        "iconClass": "dispatched"
+      },
+      {
+        "date": "2026-10-22T14:18:10.917Z",
+        "time": "14:18",
+        "office": "Kulathur SO Thiruvananthapuram",
+        "eventcode": "BAG_CLOSE",
+        "event": "Item bagged",
+        "officeid": "22660255",
+        "remarks": "",
+        "status": "in_transit",
+        "icon": "fa-box",
+        "iconClass": "in-transit"
+      },
+      {
+        "date": "2026-10-22T14:13:04.904Z",
+        "time": "14:13",
+        "office": "Kulathur SO Thiruvananthapuram",
+        "eventcode": "ITEM_BOOK",
+        "event": "Item Booked",
+        "officeid": "22660255",
+        "remarks": "",
+        "status": "booked",
+        "icon": "fa-handshake",
+        "iconClass": "pickup"
+      }
+    ],
+    "del_status": "Delivered",
+    "overall_state": "delivered",
+    "overall_status": "Delivered",
+    "status_ui": {
+      "phrase": "delivered",
+      "variant": "",
+      "badgeVariant": "delivered",
+      "tense": "past"
+    },
+    "rto_complete": false
+  }
+}
