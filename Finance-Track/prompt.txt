@@ -1,0 +1,406 @@
+Primary User Questions:
+What did I spend today?
+Where is my money going?
+How much did I save this month?
+What recurring expenses are draining my finances?
+Can I afford my goal?
+How much money will I have next month?
+Which category overspends most?
+
+User Roles:
+single user
+
+Full Application Architecture:
+AUTHENTICATION MODULE
+Pages:
+1. Landing Page (Public)
+First impression + app overview
+--Features:
+Hero section
+App benefits
+Feature highlights
+Screenshots
+Testimonials
+CTA buttons:
+Register
+Login
+Dark/light mode
+Responsive design with a minimal design and should not be look like AI generated template design.
+
+Registration Page
+--Features:
+Name
+Email
+Password
+Confirm Password
+Password strength checker
+Email OTP verification - next page within that page without changing the url path
+Terms acceptance
+CAPTCHA
+--Security:
+Password hashing (bcrypt)
+Email verification token
+CSRF protection
+Rate limiting
+
+Login Page
+--Features:
+Email/Username
+Password
+Remember me
+Forgot password
+Device recognition
+Security:
+Flask-Login / JWT Bearer token
+Session management
+
+
+MAIN APPLICATION STRUCTURE
+SIDEBAR NAVIGATION
+Main Sections:
+Dashboard
+Expenses
+Income
+Recurring Transactions
+Budgets
+Goals
+Savings Pot
+Accounts
+Reports
+Calendar
+Notifications
+Settings
+
+DASHBOARD PAGE Provide a complete financial snapshot.
+
+Widgets:
+Top Cards:
+Total Balance
+Today’s Expenses
+Today’s Income
+Monthly Expenses
+Monthly Income
+Savings Rate
+Savings Pot Balance
+Goal Progress
+
+Visual Charts:
+Expense by category (Pie Chart)
+Income sources (Bar Chart)
+Weekly spend trend (Line Chart)
+Monthly comparison
+Cashflow graph
+Goal contribution graph
+Savings pot contribution graph
+
+Smart Insights:
+“You spent 30% more on food this week”
+“Your travel expense increased”
+“Upcoming EMI in 3 days”
+“Goal completion in 2 months”
+
+Quick Actions:
+Add Expense
+Add Income
+Add Goal
+Transfer to Goal
+Add Budget
+
+
+EXPENSE MANAGEMENT PAGE
+Core Features:
+Add Expense:
+Amount
+Category
+Subcategory
+Date
+Time
+Payment method
+Account source (optional)
+Merchant/vendor (optional)
+Notes
+
+Main Categories: [Add option to add the catogories in Settings page]
+Food & Dining
+Groceries
+Travel
+Fuel
+Rent
+Utilities
+Shopping
+Entertainment
+
+Functionalities:
+Edit/Delete
+Search
+Filter by:
+  Date
+  Category
+  Amount
+  Payment type
+Sort
+Duplicate transaction
+
+
+INCOME MANAGEMENT PAGE
+Features:
+Add Income: [Add option to add the categories in Settings page]
+Salary
+Freelance
+Business
+Rental
+Passive income
+
+Fields:
+Amount
+Source
+Category
+Date
+Payment method
+Notes
+
+Extra:
+Salary breakdown
+Monthly recurring salary
+Income growth graph
+
+
+RECURRING TRANSACTIONS PAGE
+Purpose:
+Automate recurring financial events.
+Expense Recurring: [Add option to add the categories in Settings page]
+EMI
+Rent
+SIP
+Insurance
+Subscription
+Loan
+Utility bills
+
+Income Recurring:
+Salary
+Rent received
+Dividends
+Pension
+
+Features:
+Frequency: Daily, Weekly, Monthly, Quarterly, Yearly
+Start date
+End date
+Auto-add transaction
+Skip option
+Pause recurring
+Reminder before due date
+Auto notifications
+
+
+BUDGET PAGE
+Purpose:
+Control category spending.
+
+Features:
+Monthly budget
+Weekly budget
+Category-specific budget
+Budget alerts
+Overspending warning
+Budget utilization %
+Auto-adjust based on trends
+
+Example:
+Food budget = ₹8,000/month
+Spent = ₹6,200
+Remaining = ₹1,800
+
+
+GOALS / SAVINGS PAGE
+Goal Examples: [ Want Custom Add option ]
+Vacation
+Emergency fund
+Birthday
+Wedding
+
+Features:
+Goal title
+Target amount
+Deadline
+Priority
+Auto-save contribution
+Manual contribution
+Goal progress bar
+Goal analytics
+“How much per month needed”
+
+Cool Additions:
+Goal image
+Motivational tracker
+Milestones
+
+
+Savings Pot Concept
+Examples: [ Want Custom Add option ]
+Emergency Fund
+Rainy Day Fund
+Shopping Reserve
+Medical Backup
+Festival Expenses
+Car Maintenance
+Home Expenses
+Child Education Reserve
+Investment Opportunity Fund
+Gift Fund
+
+Key Difference: Goal vs Savings Pot
+Goals:
+Target amount required
+Deadline optional
+Completion tracking
+Savings Pot:
+No target required
+No deadline
+Add/withdraw anytime
+Flexible financial bucket
+
+
+ACCOUNTS PAGE
+Manage:
+Cash
+Bank accounts
+Credit cards
+UPI
+Wallets
+Investments
+
+Features:
+Balance tracking
+Transfers
+Account history
+Reconciliation
+Hidden accounts
+
+
+CALENDAR VIEW
+Purpose:
+Visual timeline
+Shows:
+Daily expenses
+Salary day
+EMI due
+Goal deadlines
+Bills
+Subscription renewals
+
+
+REPORTS & ANALYTICS PAGE
+Reports:
+Daily
+Weekly
+Monthly
+Yearly
+
+Advanced Insights: [Required]
+Spending heatmap
+Category comparison
+Income vs expense
+Savings ratio
+Investment trends
+
+Export:
+PDF
+Excel
+CSV
+
+
+NOTIFICATIONS SYSTEM
+Alerts:
+EMI due
+Subscription renew
+Salary credited
+Budget exceeded
+Goal reminder
+Weekly summary
+Monthly summary
+
+
+SETTINGS PAGE
+Features:
+Profile management
+Currency
+Timezone
+Theme
+Security settings
+Password change
+Add categories for : Expense, Income, Recurring
+Data export
+Data deletion
+Backup/restore
+
+
+SECURITY IMPLEMENTATION
+Must Have:
+bcrypt password hashing
+CSRF for issue chance endpoints
+Session timeout
+Encrypted sensitive fields
+Audit logs of Creation, deletion, updation [Only want sensitive logs, dont want unnecassary logs]
+Secure headers
+HTTPS
+Backup
+
+
+DATABASE STRUCTURE
+Suggested:
+users
+expenses
+income
+recurring_transactions
+budgets
+goals
+goal_contributions
+notifications
+accounts
+categories
+settings
+reports_cache
+[generate other proper db structure with all mentioned]
+
+
+TECH STACK
+Backend:
+Flask
+Flask-Login
+Flask-WTF
+SQLAlchemy
+Alembic
+Celery/APScheduler
+bcrypt
+
+Frontend:
+HTML
+CSS
+Bootstrap/Tailwind
+JS
+Chart.js / ApexCharts
+
+Database:
+SQLite 
+
+
+UI/UX REQUIREMENTS
+Design:
+Premium modern dashboard with minimal design
+Dark mode
+Strictly adaptable for Mobile responsive
+Card-based layout
+Animated charts
+Minimalist icons
+Quick entry forms
+
+
+
+Strictly follow these
+- Create a proper plan for this developement of the application
+- Create `Implementation.md` file for creatng a proper implementation plan phases and features need to be implemented in each phase with check mark for each one. After each completion of implementation check that feature in the file.
+- Create a `logs.md` file for logging all the actions done while developing the application.
+- Refer the prompt `prompt.md` file for wihtout thinking out of the context while developing.
+- Add any other things to be added for smooth implementation.

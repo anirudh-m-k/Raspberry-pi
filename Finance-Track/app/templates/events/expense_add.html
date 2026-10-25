@@ -1,0 +1,452 @@
+{% extends "base.html" %}
+
+{% block title %}Add Expense — FinanceTrack{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6" data-event-id="{{ event_id }}">
+  <!-- Header -->
+  <div class="flex items-center gap-4">
+    <a href="/events/{{ event_id }}/expenses" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+      <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    </a>
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Add Expense</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Record a new group transaction</p>
+    </div>
+  </div>
+
+  <div class="card p-6">
+    <form id="expenseForm" class="space-y-6">
+
+      <!-- Amount, Date, Category, Merchant -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Amount *</label>
+          <div class="relative flex items-center">
+            <span class="absolute left-3 text-gray-500 dark:text-gray-400 font-bold text-base pointer-events-none z-10">₹</span>
+            <input type="number" step="0.01" id="amount" class="input-field pl-8" placeholder="0.00" required min="0.01">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Date *</label>
+          <input type="date" id="date" class="input-field" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Category *</label>
+          <select id="category" class="input-field" required>
+            <option value="">Select Category</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Merchant / Title</label>
+          <input type="text" id="merchant" class="input-field" placeholder="e.g. Hotel Taj, Uber, Dinner">
+        </div>
+      </div>
+
+      <!-- Paid By -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Paid By *</label>
+        <div id="paidByContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+      </div>
+
+      <!-- Included Members -->
+      <div class="p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700/50 rounded-xl">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <label class="text-sm font-semibold text-indigo-700 dark:text-indigo-300">
+              Included in Split
+              <span id="includedCount" class="ml-1.5 px-2 py-0.5 rounded-full bg-indigo-600 text-white text-xs font-bold">0</span>
+            </label>
+          </div>
+          <div class="flex items-center gap-2 text-xs">
+            <button type="button" id="btnSelectAll" onclick="setAllMembers(true)"
+              class="px-2.5 py-1 rounded-md bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors">
+              All
+            </button>
+            <button type="button" onclick="setAllMembers(false)"
+              class="px-2.5 py-1 rounded-md bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+              None
+            </button>
+          </div>
+        </div>
+        <div id="includedMembersContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></div>
+        <p class="mt-2 text-xs text-indigo-500 dark:text-indigo-400">Select which members share this expense. The split is calculated only among included members.</p>
+      </div>
+
+      <!-- Split Type -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Split Breakdown</label>
+        <div class="flex gap-2 mb-4">
+          <button type="button" class="split-btn active flex-1 py-2 rounded-lg text-sm font-medium transition-colors bg-primary-600 text-white" data-type="equal">Equal</button>
+          <button type="button" class="split-btn flex-1 py-2 rounded-lg text-sm font-medium transition-colors bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600" data-type="custom">Custom Amount</button>
+          <button type="button" class="split-btn flex-1 py-2 rounded-lg text-sm font-medium transition-colors bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600" data-type="percentage">Percentage</button>
+        </div>
+        <div id="splitContainer" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl space-y-3 border border-gray-200 dark:border-gray-700"></div>
+      </div>
+
+      <!-- Note -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Note (Optional)</label>
+        <textarea id="note" class="input-field" rows="2" placeholder="Short note (e.g. Lunch at Taj)..."></textarea>
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Description (Optional)</label>
+        <textarea id="description" class="input-field" rows="3" placeholder="Detailed description or itemized breakdown..."></textarea>
+      </div>
+
+      <!-- Bill Attachment -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Attach Bill / Receipt (Optional)</label>
+        <div class="p-4 bg-gray-50 dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl text-center cursor-pointer hover:border-indigo-500 transition-colors relative" id="dropZone" onclick="document.getElementById('receipt_file').click()">
+          <input type="file" id="receipt_file" class="hidden" accept="image/*,.pdf" onchange="handleFileSelect(this)">
+          <div id="fileUploadPrompt" class="space-y-1">
+            <svg class="w-8 h-8 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Click or drag &amp; drop to upload bill (JPG, PNG, PDF)</p>
+            <p class="text-xs text-gray-400">Max size: 10MB</p>
+          </div>
+          <div id="fileSelectedPreview" class="hidden flex items-center justify-between p-2.5 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg border border-indigo-200 dark:border-indigo-700">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <span id="fileIcon" class="text-xl flex-shrink-0">📄</span>
+              <div class="text-left min-w-0">
+                <p id="fileName" class="text-xs font-bold text-indigo-700 dark:text-indigo-300 truncate"></p>
+                <p id="fileSize" class="text-[11px] text-gray-500 dark:text-gray-400"></p>
+              </div>
+            </div>
+            <button type="button" onclick="event.stopPropagation(); clearFileSelect();" class="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1">Remove</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <a href="/events/{{ event_id }}/expenses" class="btn-secondary">Cancel</a>
+        <button type="submit" id="btn-save" class="btn-primary flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          Save Expense
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const EVENT_ID = {{ event_id }};
+let members = [];         // all event members
+let splitType = 'equal';
+
+function handleFileSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  
+  const prompt = document.getElementById('fileUploadPrompt');
+  const preview = document.getElementById('fileSelectedPreview');
+  const fileName = document.getElementById('fileName');
+  const fileSize = document.getElementById('fileSize');
+  const fileIcon = document.getElementById('fileIcon');
+
+  fileName.textContent = file.name;
+  fileSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+  fileIcon.textContent = file.type.includes('pdf') ? '📕' : '🖼️';
+
+  prompt.classList.add('hidden');
+  preview.classList.remove('hidden');
+}
+
+function clearFileSelect() {
+  const input = document.getElementById('receipt_file');
+  input.value = '';
+  document.getElementById('fileUploadPrompt').classList.remove('hidden');
+  document.getElementById('fileSelectedPreview').classList.add('hidden');
+}
+
+// Drag & drop handlers
+const dropZone = document.getElementById('dropZone');
+if (dropZone) {
+  ['dragenter', 'dragover'].forEach(name => {
+    dropZone.addEventListener(name, (e) => { e.preventDefault(); dropZone.classList.add('border-indigo-500', 'bg-indigo-50/50'); }, false);
+  });
+  ['dragleave', 'drop'].forEach(name => {
+    dropZone.addEventListener(name, (e) => { e.preventDefault(); dropZone.classList.remove('border-indigo-500', 'bg-indigo-50/50'); }, false);
+  });
+  dropZone.addEventListener('drop', (e) => {
+    const files = e.dataTransfer.files;
+    if (files.length) {
+      document.getElementById('receipt_file').files = files;
+      handleFileSelect(document.getElementById('receipt_file'));
+    }
+  }, false);
+}
+
+// Returns only the members whose "included" checkbox is checked
+function getIncludedMembers() {
+  return members.filter(m => {
+    const cb = document.getElementById(`include_${m.id}`);
+    return cb && cb.checked;
+  });
+}
+
+function updateIncludedCount() {
+  const count = getIncludedMembers().length;
+  document.getElementById('includedCount').textContent = count;
+}
+
+function setAllMembers(checked) {
+  members.forEach(m => {
+    const cb = document.getElementById(`include_${m.id}`);
+    if (cb) cb.checked = checked;
+  });
+  updateIncludedCount();
+  renderSplitPreview();
+}
+
+async function init() {
+  document.getElementById('date').value = new Date().toISOString().split('T')[0];
+  await Promise.all([loadCategories(), loadMembers()]);
+
+  document.querySelectorAll('.split-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.split-btn').forEach(b => {
+        b.className = 'split-btn flex-1 py-2 rounded-lg text-sm font-medium transition-colors bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600';
+      });
+      btn.className = 'split-btn active flex-1 py-2 rounded-lg text-sm font-medium transition-colors bg-primary-600 text-white';
+      splitType = btn.dataset.type;
+      renderSplitPreview();
+    });
+  });
+
+  document.getElementById('amount').addEventListener('input', renderSplitPreview);
+
+  document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const amount = parseFloat(document.getElementById('amount').value);
+    const date = document.getElementById('date').value;
+    const catVal = document.getElementById('category').value;
+    const category_id = catVal ? parseInt(catVal) : null;
+    const merchant = document.getElementById('merchant').value.trim();
+    const note = document.getElementById('note').value.trim();
+    const description = document.getElementById('description').value.trim();
+    const paid_by_el = document.querySelector('input[name="paid_by"]:checked');
+
+    if (!paid_by_el) {
+      showToast('Select who paid for this expense', 'error');
+      return;
+    }
+
+    const paid_by_member_id = parseInt(paid_by_el.value);
+    const includedMembers = getIncludedMembers();
+
+    if (includedMembers.length === 0) {
+      showToast('Select at least one member to include in the split', 'error');
+      return;
+    }
+
+    let splits = [];
+    let pctTotal = 0;
+    let customTotal = 0;
+
+    includedMembers.forEach(m => {
+      let s_amount = 0;
+      if (splitType === 'equal') {
+        s_amount = Number((amount / includedMembers.length).toFixed(2));
+      } else if (splitType === 'custom') {
+        const inpVal = parseFloat(document.getElementById(`split_custom_${m.id}`)?.value) || 0;
+        s_amount = inpVal;
+        customTotal += inpVal;
+      } else if (splitType === 'percentage') {
+        const pct = parseFloat(document.getElementById(`split_pct_${m.id}`)?.value) || 0;
+        s_amount = Number((amount * (pct / 100)).toFixed(2));
+        pctTotal += pct;
+      }
+      splits.push({ member_id: m.id, amount: s_amount });
+    });
+
+    if (splitType === 'percentage' && Math.abs(pctTotal - 100) > 0.1) {
+      showToast(`Percentages must sum to 100% (currently ${pctTotal.toFixed(1)}%)`, 'error');
+      return;
+    }
+    if (splitType === 'custom' && Math.abs(customTotal - amount) > 0.05) {
+      showToast(`Custom amounts must sum to ₹${amount.toFixed(2)} (currently ₹${customTotal.toFixed(2)})`, 'error');
+      return;
+    }
+
+    const btn = document.getElementById('btn-save');
+    const originalLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    try {
+      const formData = new FormData();
+      formData.append('amount', amount);
+      formData.append('date', date);
+      if (category_id) formData.append('category_id', category_id);
+      formData.append('merchant', merchant);
+      formData.append('note', note);
+      formData.append('description', description);
+      formData.append('paid_by_member_id', paid_by_member_id);
+      formData.append('split_type', splitType);
+      formData.append('splits', JSON.stringify(splits));
+
+      const fileInput = document.getElementById('receipt_file');
+      if (fileInput && fileInput.files[0]) {
+        const compressed = await compressImage(fileInput.files[0]);
+        formData.append('receipt_file', compressed, compressed.name);
+      }
+
+      const resData = await api.upload(`/events/${EVENT_ID}/expenses`, formData, 'POST', {
+        onProgress: (pct) => {
+          btn.textContent = pct < 100 ? `Uploading... ${pct}%` : 'Saving...';
+        },
+      });
+
+      showToast('Expense saved successfully!', 'success');
+      setTimeout(() => { window.location.href = `/events/${EVENT_ID}/expenses`; }, 600);
+    } catch(err) {
+      console.error('Expense save error:', err);
+      showToast(err?.error?.message || err?.message || 'Failed to save expense', 'error');
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+    }
+  });
+}
+
+async function loadCategories() {
+  const res = await api.get(`/events/${EVENT_ID}/categories`);
+  const cats = res.data || [];
+  const sel = document.getElementById('category');
+  cats.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = c.name;
+    sel.appendChild(opt);
+  });
+}
+
+async function loadMembers() {
+  const res = await api.get(`/events/${EVENT_ID}/members`);
+  members = res.data || [];
+
+  // --- Paid By radios ---
+  const pb = document.getElementById('paidByContainer');
+  pb.innerHTML = members.map((m, i) => `
+    <label class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors">
+      <input type="radio" name="paid_by" value="${m.id}" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500" ${i === 0 ? 'checked' : ''}>
+      <span class="w-3 h-3 rounded-full flex-shrink-0" style="background:${m.color || '#6366f1'}"></span>
+      <span class="text-sm font-medium text-gray-900 dark:text-white truncate">${m.name}</span>
+    </label>
+  `).join('');
+
+  // --- Included Members checkboxes (all checked by default) ---
+  const im = document.getElementById('includedMembersContainer');
+  im.innerHTML = members.map(m => `
+    <label class="included-member-label flex items-center gap-2 p-2.5 bg-white dark:bg-gray-800 rounded-xl border-2 border-indigo-200 dark:border-indigo-700 cursor-pointer transition-all hover:border-indigo-500 text-gray-900 dark:text-white selected" data-id="${m.id}">
+      <input type="checkbox" id="include_${m.id}" value="${m.id}" class="w-4 h-4 text-indigo-600 rounded" checked
+        onchange="onIncludeChange(this, ${m.id})">
+      <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${m.color || '#6366f1'}"></span>
+      <span class="text-xs font-semibold text-gray-900 dark:text-white truncate">${m.name}</span>
+    </label>
+  `).join('');
+
+  updateIncludedCount();
+  renderSplitPreview();
+}
+
+function onIncludeChange(cb, memberId) {
+  const label = cb.closest('.included-member-label');
+  if (cb.checked) {
+    label.classList.add('selected');
+    label.style.opacity = '1';
+  } else {
+    label.classList.remove('selected');
+    label.style.opacity = '0.45';
+  }
+  updateIncludedCount();
+  renderSplitPreview();
+}
+
+function renderSplitPreview() {
+  const container = document.getElementById('splitContainer');
+  container.innerHTML = '';
+  const amount = parseFloat(document.getElementById('amount').value) || 0;
+  const includedMembers = getIncludedMembers();
+
+  if (includedMembers.length === 0) {
+    container.innerHTML = '<p class="text-sm text-gray-400 dark:text-gray-500 text-center py-2">No members selected for split</p>';
+    return;
+  }
+
+  includedMembers.forEach(m => {
+    const row = document.createElement('div');
+    row.className = 'flex items-center justify-between gap-4 text-sm';
+
+    let inputHtml = '';
+    if (splitType === 'equal') {
+      const eq = (amount / includedMembers.length).toFixed(2);
+      inputHtml = `<span class="font-semibold text-gray-900 dark:text-white">₹${eq}</span>`;
+    } else if (splitType === 'custom') {
+      inputHtml = `<div class="relative"><span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-xs text-gray-400">₹</span><input type="number" step="0.01" id="split_custom_${m.id}" class="input-field w-32 pl-6 py-1 text-sm" placeholder="0.00" oninput="liveCustomTotal()"></div>`;
+    } else if (splitType === 'percentage') {
+      inputHtml = `<div class="flex items-center gap-1.5"><input type="number" step="0.1" id="split_pct_${m.id}" class="input-field w-20 py-1 text-sm text-right" placeholder="0" oninput="livePctTotal()"><span class="text-gray-500 dark:text-gray-400">%</span></div>`;
+    }
+
+    row.innerHTML = `
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${m.color || '#6366f1'}"></span>
+        <span class="text-gray-700 dark:text-gray-300 font-medium">${m.name}</span>
+      </div>
+      ${inputHtml}
+    `;
+    container.appendChild(row);
+  });
+
+  // Live total hint for custom/percentage
+  if (splitType === 'custom' || splitType === 'percentage') {
+    const hint = document.createElement('div');
+    hint.id = 'splitTotalHint';
+    hint.className = 'pt-2 border-t border-gray-200 dark:border-gray-600 flex justify-between text-xs font-semibold text-gray-500 dark:text-gray-400';
+    hint.innerHTML = `
+      <span>${splitType === 'custom' ? 'Total entered' : 'Total %'}</span>
+      <span id="splitTotalVal">${splitType === 'custom' ? '₹0.00' : '0%'}</span>
+    `;
+    container.appendChild(hint);
+  }
+}
+
+function liveCustomTotal() {
+  const amount = parseFloat(document.getElementById('amount').value) || 0;
+  let total = 0;
+  getIncludedMembers().forEach(m => {
+    total += parseFloat(document.getElementById(`split_custom_${m.id}`)?.value) || 0;
+  });
+  const hint = document.getElementById('splitTotalVal');
+  if (hint) {
+    hint.textContent = `₹${total.toFixed(2)} / ₹${amount.toFixed(2)}`;
+    hint.className = Math.abs(total - amount) < 0.05
+      ? 'text-emerald-600 dark:text-emerald-400'
+      : 'text-red-500 dark:text-red-400';
+  }
+}
+
+function livePctTotal() {
+  let total = 0;
+  getIncludedMembers().forEach(m => {
+    total += parseFloat(document.getElementById(`split_pct_${m.id}`)?.value) || 0;
+  });
+  const hint = document.getElementById('splitTotalVal');
+  if (hint) {
+    hint.textContent = `${total.toFixed(1)}% / 100%`;
+    hint.className = Math.abs(total - 100) < 0.1
+      ? 'text-emerald-600 dark:text-emerald-400'
+      : 'text-red-500 dark:text-red-400';
+  }
+}
+
+init();
+</script>
+{% endblock %}

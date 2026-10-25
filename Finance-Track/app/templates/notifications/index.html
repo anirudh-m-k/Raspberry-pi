@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications - FinanceTrack{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Notifications</h1>
+            <p id="unread-count" class="text-gray-600 dark:text-gray-400 text-sm"></p>
+        </div>
+        <button onclick="markAllRead()" class="btn-secondary text-sm">
+            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Mark All Read
+        </button>
+    </div>
+
+    <div id="notifications-list" class="space-y-2">
+    </div>
+
+    {% include 'components/empty_state.html' %}
+    {% include 'components/pagination.html' %}
+</div>
+
+<script>
+let notificationsData = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    setPageTitle('Notifications');
+    loadNotifications();
+});
+
+async function loadNotifications(page = 1) {
+    try {
+        const result = await api.get('/notifications', { page, per_page: 20 });
+        notificationsData = result.data.notifications;
+        renderNotifications();
+        updatePagination(result.pagination, loadNotifications);
+
+        const unreadCount = result.data.unread_count;
+        document.getElementById('unread-count').textContent = unreadCount > 0 ? `${unreadCount} unread` : 'All caught up!';
+
+        if (notificationsData.length === 0) {
+            showEmptyState('No notifications', 'You\'re all caught up! Notifications will appear here when there\'s something important.');
+        } else {
+            hideEmptyState();
+        }
+    } catch (e) {
+        showFlash('Failed to load notifications', 'error');
+    }
+}
+
+function renderNotifications() {
+    const list = document.getElementById('notifications-list');
+    const typeIcons = {
+        emi_due: '<svg class="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+        subscription_renew: '<svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>',
+        budget_exceeded: '<svg class="w-5 h-5 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>',
+        goal_reminder: '<svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>',
+        salary_credited: '<svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>',
+        weekly_summary: '<svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>',
+        monthly_summary: '<svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>',
+        system: '<svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+    };
+
+    list.innerHTML = notificationsData.map(n => `
+        <div class="card p-4 flex items-start gap-4 ${n.is_read ? 'opacity-60' : ''}" data-id="${n.id}">
+            <div class="flex-shrink-0 mt-0.5">
+                ${typeIcons[n.type] || typeIcons.system}
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-start justify-between gap-2">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-900 dark:text-white">${escapeHtml(n.title)}</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5">${escapeHtml(n.message)}</p>
+                        <p class="text-xs text-gray-500 mt-1">${formatDate(n.created_at)}</p>
+                    </div>
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                        ${!n.is_read ? `
+                            <button onclick="markRead(${n.id})" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-surface-dark-hover" title="Mark as read">
+                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            </button>
+                        ` : ''}
+                        <button onclick="deleteNotification(${n.id})" class="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/20" title="Delete">
+                            <svg class="w-4 h-4 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function markRead(id) {
+    try {
+        await api.put(`/notifications/${id}/read`);
+        loadNotifications(currentPage);
+    } catch (e) {}
+}
+
+async function markAllRead() {
+    try {
+        await api.put('/notifications/read-all');
+        showFlash('All notifications marked as read', 'success');
+        loadNotifications();
+    } catch (e) {
+        showFlash('Failed', 'error');
+    }
+}
+
+async function deleteNotification(id) {
+    try {
+        await api.delete(`/notifications/${id}`);
+        loadNotifications(currentPage);
+    } catch (e) {}
+}
+</script>
+{% endblock %}

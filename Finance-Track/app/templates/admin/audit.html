@@ -1,0 +1,148 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Audit Logs - Admin{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Audit Logs</h1>
+            <p id="audit-subtitle" class="text-gray-600 dark:text-gray-400 text-sm">Track user actions and system events</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <div id="user-filter-badge" class="hidden items-center gap-2 px-3 py-1.5 bg-primary-100 dark:bg-primary-900/20 rounded-lg">
+                <span id="user-filter-name" class="text-sm text-primary-700 dark:text-primary-300"></span>
+                <button onclick="clearUserFilter()" class="text-primary-500 hover:text-primary-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <input type="text" id="action-filter" placeholder="Filter by action..." class="input-field w-48" oninput="debounce(loadLogs, 300)()">
+        </div>
+    </div>
+
+    <div class="card overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-200 dark:border-gray-700">
+                        <th class="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Timestamp</th>
+                        <th class="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">User</th>
+                        <th class="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Action</th>
+                        <th class="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Details</th>
+                        <th class="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">IP Address</th>
+                    </tr>
+                </thead>
+                <tbody id="logs-list"></tbody>
+            </table>
+        </div>
+        <div id="logs-pagination" class="px-6 py-4 border-t border-gray-200 dark:border-gray-700"></div>
+    </div>
+</div>
+
+{% include 'components/modal.html' %}
+
+<script>
+let currentPage = 1;
+let filterUserId = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Check URL params for user_id filter
+    const params = new URLSearchParams(window.location.search);
+    const userId = params.get('user_id');
+    const userName = params.get('user_name');
+
+    if (userId) {
+        filterUserId = userId;
+        document.getElementById('user-filter-badge').classList.remove('hidden');
+        document.getElementById('user-filter-badge').classList.add('flex');
+        document.getElementById('user-filter-name').textContent = `User: ${decodeURIComponent(userName || userId)}`;
+        document.getElementById('audit-subtitle').textContent = `Showing audit logs for ${decodeURIComponent(userName || 'selected user')}`;
+    }
+
+    loadLogs();
+});
+
+async function loadLogs(page = 1) {
+    currentPage = page;
+    const params = {
+        page: page,
+        per_page: 30,
+        action: document.getElementById('action-filter').value,
+    };
+
+    if (filterUserId) {
+        params.user_id = filterUserId;
+    }
+
+    Object.keys(params).forEach(k => { if (!params[k]) delete params[k]; });
+
+    try {
+        const result = await api.get('/admin/audit-logs', params);
+        renderLogs(result.data);
+        renderPagination(result.pagination, loadLogs);
+    } catch (e) {
+        showFlash('Failed to load audit logs', 'error');
+    }
+}
+
+function clearUserFilter() {
+    filterUserId = null;
+    document.getElementById('user-filter-badge').classList.add('hidden');
+    document.getElementById('user-filter-badge').classList.remove('flex');
+    document.getElementById('audit-subtitle').textContent = 'Track user actions and system events';
+
+    // Remove URL params
+    const url = new URL(window.location);
+    url.searchParams.delete('user_id');
+    url.searchParams.delete('user_name');
+    window.history.replaceState({}, '', url);
+
+    loadLogs();
+}
+
+function renderLogs(logs) {
+    const tbody = document.getElementById('logs-list');
+    if (logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">No logs found</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = logs.map(log => `
+        <tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-surface-dark-hover">
+            <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">${formatDateTime(log.created_at)}</td>
+            <td class="px-6 py-4">
+                <a href="/admin/audit?user_id=${log.user_id}&user_name=${encodeURIComponent(log.user_name)}" class="text-sm font-medium text-primary-600 hover:text-primary-700">${escapeHtml(log.user_name)}</a>
+                <p class="text-xs text-gray-500">${escapeHtml(log.user_email)}</p>
+            </td>
+            <td class="px-6 py-4">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">${escapeHtml(log.action)}</span>
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate">${escapeHtml(log.details) || '-'}</td>
+            <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">${escapeHtml(log.ip_address) || '-'}</td>
+        </tr>
+    `).join('');
+}
+
+function renderPagination(pagination, callback) {
+    const container = document.getElementById('logs-pagination');
+    if (pagination.pages <= 1) {
+        container.innerHTML = '';
+        return;
+    }
+
+    let html = '<div class="flex items-center justify-between">';
+    html += `<p class="text-sm text-gray-600 dark:text-gray-400">Page ${pagination.page} of ${pagination.pages} (${pagination.total} total)</p>`;
+    html += '<div class="flex items-center gap-1">';
+
+    if (pagination.page > 1) {
+        html += `<button onclick="(${callback.name})(${pagination.page - 1})" class="px-3 py-1.5 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-surface-dark-hover">Previous</button>`;
+    }
+    if (pagination.page < pagination.pages) {
+        html += `<button onclick="(${callback.name})(${pagination.page + 1})" class="px-3 py-1.5 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-surface-dark-hover">Next</button>`;
+    }
+
+    html += '</div></div>';
+    container.innerHTML = html;
+}
+</script>
+{% endblock %}

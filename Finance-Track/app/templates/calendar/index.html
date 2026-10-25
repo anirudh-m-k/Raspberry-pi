@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Calendar - FinanceTrack{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Calendar</h1>
+        <p class="text-gray-600 dark:text-gray-400 text-sm">Visual timeline of your financial events</p>
+    </div>
+
+    <div class="card p-6">
+        <div class="flex items-center justify-between mb-6">
+            <button onclick="changeMonth(-1)" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-surface-dark-hover">
+                <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <h2 id="calendar-month" class="text-lg font-semibold text-gray-900 dark:text-white"></h2>
+            <button onclick="changeMonth(1)" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-surface-dark-hover">
+                <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="grid grid-cols-7 gap-1">
+            <div class="text-center text-xs font-medium text-gray-500 py-2">Sun</div>
+            <div class="text-center text-xs font-medium text-gray-500 py-2">Mon</div>
+            <div class="text-center text-xs font-medium text-gray-500 py-2">Tue</div>
+            <div class="text-center text-xs font-medium text-gray-500 py-2">Wed</div>
+            <div class="text-center text-xs font-medium text-gray-500 py-2">Thu</div>
+            <div class="text-center text-xs font-medium text-gray-500 py-2">Fri</div>
+            <div class="text-center text-xs font-medium text-gray-500 py-2">Sat</div>
+        </div>
+
+        <div id="calendar-grid" class="grid grid-cols-7 gap-1 mt-1">
+        </div>
+
+        <div class="flex items-center gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-danger"></div>
+                <span class="text-xs text-gray-500">Expense</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-success"></div>
+                <span class="text-xs text-gray-500">Income</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-warning"></div>
+                <span class="text-xs text-gray-500">Recurring</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-purple-500"></div>
+                <span class="text-xs text-gray-500">Goal Deadline</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Day Details -->
+    <div id="day-details" class="card p-6 hidden">
+        <h3 id="day-title" class="text-lg font-semibold text-gray-900 dark:text-white mb-4"></h3>
+        <div id="day-events" class="space-y-3">
+        </div>
+    </div>
+</div>
+
+<script>
+let currentDate = new Date();
+let eventsData = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    setPageTitle('Calendar');
+    loadCalendar();
+});
+
+function changeMonth(delta) {
+    currentDate.setMonth(currentDate.getMonth() + delta);
+    loadCalendar();
+}
+
+async function loadCalendar() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const start = new Date(year, month, 1);
+    const end = new Date(year, month + 1, 0);
+
+    document.getElementById('calendar-month').textContent = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+    try {
+        const result = await api.get('/calendar/events', {
+            start: start.toISOString().split('T')[0],
+            end: end.toISOString().split('T')[0],
+        });
+        eventsData = result.data;
+        renderCalendar(year, month);
+    } catch (e) {
+        showFlash('Failed to load calendar', 'error');
+    }
+}
+
+function renderCalendar(year, month) {
+    const grid = document.getElementById('calendar-grid');
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
+
+    let html = '';
+
+    // Empty cells before first day
+    for (let i = 0; i < firstDay; i++) {
+        html += '<div class="min-h-[80px] p-1"></div>';
+    }
+
+    // Days
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dayEvents = eventsData.filter(e => e.date === dateStr);
+        const isToday = today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
+
+        html += `
+            <div class="min-h-[80px] p-1 rounded-lg border border-gray-100 dark:border-gray-800 ${isToday ? 'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800' : 'hover:bg-gray-50 dark:hover:bg-surface-dark'} cursor-pointer" onclick="showDayDetails('${dateStr}')">
+                <div class="text-right mb-1">
+                    <span class="text-xs font-medium ${isToday ? 'text-primary-600' : 'text-gray-700 dark:text-gray-300'}">${day}</span>
+                </div>
+                <div class="flex flex-wrap gap-0.5">
+                    ${dayEvents.slice(0, 3).map(e => `
+                        <div class="w-2 h-2 rounded-full" style="background-color: ${e.color}" title="${e.title}"></div>
+                    `).join('')}
+                    ${dayEvents.length > 3 ? `<span class="text-xs text-gray-500">+${dayEvents.length - 3}</span>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    grid.innerHTML = html;
+}
+
+function showDayDetails(dateStr) {
+    const dayEvents = eventsData.filter(e => e.date === dateStr);
+    const container = document.getElementById('day-details');
+    const title = document.getElementById('day-title');
+    const events = document.getElementById('day-events');
+
+    container.classList.remove('hidden');
+    title.textContent = new Date(dateStr).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+    if (dayEvents.length === 0) {
+        events.innerHTML = '<p class="text-gray-500 text-sm">No events on this day</p>';
+        return;
+    }
+
+    events.innerHTML = dayEvents.map(e => `
+        <div class="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-surface-dark">
+            <div class="w-3 h-3 rounded-full" style="background-color: ${e.color}"></div>
+            <div class="flex-1">
+                <p class="text-sm font-medium text-gray-900 dark:text-white">${escapeHtml(e.title)}</p>
+                ${e.description ? `<p class="text-xs text-gray-500">${escapeHtml(e.description)}</p>` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+</script>
+{% endblock %}

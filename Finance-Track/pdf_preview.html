@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Report Preview</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 20mm;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            background: #f0f0f0;
+            color: #1e293b;
+            line-height: 1.5;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 20px auto;
+            background: white;
+            padding: 20mm;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .page {
+                margin: 0;
+                box-shadow: none;
+                page-break-after: always;
+            }
+        }
+
+        /* Header */
+        .report-header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #4263EB;
+        }
+
+        .report-header h1 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #4263EB;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        .report-header .date-range {
+            font-size: 15px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .report-header .generated {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        /* Summary Section */
+        .summary-section {
+            margin-bottom: 20px;
+        }
+
+        .summary-section h2 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .summary-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .summary-card .label {
+            font-size: 10px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .summary-card .value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .summary-card.income .value { color: #16a34a; }
+        .summary-card.expense .value { color: #dc2626; }
+        .summary-card.savings .value { color: #4263EB; }
+        .summary-card.rate .value { color: #7c3aed; }
+
+        .transaction-count {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 14px;
+            text-align: center;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .transaction-count strong {
+            color: #1e293b;
+        }
+
+        /* Category Section */
+        .category-section {
+            margin-bottom: 20px;
+        }
+
+        .category-section h2 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        /* Section Headers */
+        .section-header {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 11px;
+            table-layout: fixed;
+        }
+
+        thead th {
+            background: #4263EB;
+            color: white;
+            font-weight: 600;
+            padding: 10px 12px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            vertical-align: middle;
+        }
+
+        tbody td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        tfoot td {
+            padding: 10px 12px;
+            font-weight: 700;
+            background: #f1f5f9;
+            border-top: 2px solid #4263EB;
+            vertical-align: middle;
+        }
+
+        /* Type Badges */
+        .type-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .type-badge.income {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .type-badge.expense {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* Pagination */
+        .pagination {
+            text-align: center;
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 16px;
+        }
+
+        /* Page Break */
+        .page-break {
+            page-break-before: always;
+        }
+
+        /* Footer */
+        .report-footer {
+            position: absolute;
+            bottom: 20mm;
+            left: 20mm;
+            right: 20mm;
+            padding-top: 12px;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            font-size: 10px;
+            color: #94a3b8;
+        }
+
+        .page {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE 1: Header, Summary & Spending by Category -->
+    <div class="page">
+        <div class="report-header">
+            <h1>FINANCE REPORT</h1>
+            <div class="date-range">1 June 2026 — 30 June 2026</div>
+            <div class="generated">Generated on 06 June 2026, 10:30 AM</div>
+        </div>
+
+        <div class="summary-section">
+            <h2>Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-card income">
+                    <div class="label">Total Income</div>
+                    <div class="value">₹50,000</div>
+                </div>
+                <div class="summary-card expense">
+                    <div class="label">Total Expenses</div>
+                    <div class="value">₹30,000</div>
+                </div>
+                <div class="summary-card savings">
+                    <div class="label">Net Savings</div>
+                    <div class="value">₹20,000</div>
+                </div>
+                <div class="summary-card rate">
+                    <div class="label">Savings Rate</div>
+                    <div class="value">40%</div>
+                </div>
+            </div>
+            <div class="transaction-count">
+                Transactions: <strong>45 total</strong> (12 income, 33 expense)
+            </div>
+        </div>
+
+        <div class="category-section">
+            <h2>Spending by Category</h2>
+            <table style="table-layout: fixed;">
+                <colgroup>
+                    <col style="width: 40%;">
+                    <col style="width: 20%;">
+                    <col style="width: 20%;">
+                    <col style="width: 20%;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Category</th>
+                        <th style="text-align: center;">Transactions</th>
+                        <th style="text-align: center;">%</th>
+                        <th style="text-align: right;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="text-align: left;">Food & Dining</td>
+                        <td style="text-align: center;">12</td>
+                        <td style="text-align: center;">28%</td>
+                        <td style="text-align: right;">₹8,500</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">Groceries</td>
+                        <td style="text-align: center;">8</td>
+                        <td style="text-align: center;">21%</td>
+                        <td style="text-align: right;">₹6,200</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">Transport</td>
+                        <td style="text-align: center;">6</td>
+                        <td style="text-align: center;">16%</td>
+                        <td style="text-align: right;">₹4,800</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">Shopping</td>
+                        <td style="text-align: center;">4</td>
+                        <td style="text-align: center;">12%</td>
+                        <td style="text-align: right;">₹3,500</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">Bills & Utilities</td>
+                        <td style="text-align: center;">2</td>
+                        <td style="text-align: center;">10%</td>
+                        <td style="text-align: right;">₹3,000</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">Entertainment</td>
+                        <td style="text-align: center;">3</td>
+                        <td style="text-align: center;">7%</td>
+                        <td style="text-align: right;">₹2,200</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">Health</td>
+                        <td style="text-align: center;">1</td>
+                        <td style="text-align: center;">3%</td>
+                        <td style="text-align: right;">₹1,000</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">Others</td>
+                        <td style="text-align: center;">2</td>
+                        <td style="text-align: center;">3%</td>
+                        <td style="text-align: right;">₹800</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td style="text-align: left;">TOTAL</td>
+                        <td style="text-align: center;">38</td>
+                        <td style="text-align: center;">100%</td>
+                        <td style="text-align: right;">₹30,000</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="report-footer">
+            FinanceTrack — Personal Finance Manager
+        </div>
+    </div>
+
+    <!-- PAGE 2: All Transactions (Part 1) -->
+    <div class="page page-break">
+        <h2 class="section-header">All Transactions</h2>
+        <table style="table-layout: fixed;">
+            <colgroup>
+                <col style="width: 16%;">
+                <col style="width: 10%;">
+                <col style="width: 18%;">
+                <col style="width: 36%;">
+                <col style="width: 20%;">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th style="text-align: left;">Date</th>
+                    <th style="text-align: center;">Type</th>
+                    <th style="text-align: left;">Category</th>
+                    <th style="text-align: left;">Notes</th>
+                    <th style="text-align: right;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="text-align: left;">01/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge income">IN</span></td>
+                    <td style="text-align: left;">Salary</td>
+                    <td style="text-align: left;">Monthly Salary</td>
+                    <td style="text-align: right;">₹45,000</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">01/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge income">IN</span></td>
+                    <td style="text-align: left;">Freelance</td>
+                    <td style="text-align: left;">Project Payment</td>
+                    <td style="text-align: right;">₹5,000</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">02/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Groceries</td>
+                    <td style="text-align: left;">BigBasket - Weekly groceries</td>
+                    <td style="text-align: right;">₹1,200</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">02/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Food</td>
+                    <td style="text-align: left;">Lunch order</td>
+                    <td style="text-align: right;">₹450</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">03/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Transport</td>
+                    <td style="text-align: left;">Office commute</td>
+                    <td style="text-align: right;">₹320</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">03/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Shopping</td>
+                    <td style="text-align: left;">Electronics purchase</td>
+                    <td style="text-align: right;">₹2,500</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">04/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge income">IN</span></td>
+                    <td style="text-align: left;">Cashback</td>
+                    <td style="text-align: left;">UPI cashback reward</td>
+                    <td style="text-align: right;">₹150</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">05/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Bills</td>
+                    <td style="text-align: left;">Electricity bill</td>
+                    <td style="text-align: right;">₹1,500</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">05/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Food</td>
+                    <td style="text-align: left;">Dinner with friends</td>
+                    <td style="text-align: right;">₹680</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">06/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Entertainment</td>
+                    <td style="text-align: left;">Monthly subscription</td>
+                    <td style="text-align: right;">₹649</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">07/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Groceries</td>
+                    <td style="text-align: left;">Monthly stock-up</td>
+                    <td style="text-align: right;">₹2,100</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">08/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Transport</td>
+                    <td style="text-align: left;">Cab to airport</td>
+                    <td style="text-align: right;">₹280</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">09/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge income">IN</span></td>
+                    <td style="text-align: left;">Refund</td>
+                    <td style="text-align: left;">Product return refund</td>
+                    <td style="text-align: right;">₹899</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">10/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Health</td>
+                    <td style="text-align: left;">Pharmacy - Medicines</td>
+                    <td style="text-align: right;">₹450</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">11/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Food</td>
+                    <td style="text-align: left;">Weekend dinner</td>
+                    <td style="text-align: right;">₹520</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4">Total Income (12 transactions)</td>
+                    <td>₹50,000</td>
+                </tr>
+                <tr>
+                    <td colspan="4">Total Expenses (33 transactions)</td>
+                    <td>₹30,000</td>
+                </tr>
+                <tr>
+                    <td colspan="4">Net Savings</td>
+                    <td>₹20,000</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="pagination">Page 2 of 4</div>
+        <div class="report-footer">
+            FinanceTrack — Personal Finance Manager
+        </div>
+    </div>
+
+    <!-- PAGE 3: All Transactions (Part 2) -->
+    <div class="page page-break">
+        <h2 class="section-header">All Transactions (Continued)</h2>
+        <table style="table-layout: fixed;">
+            <colgroup>
+                <col style="width: 16%;">
+                <col style="width: 10%;">
+                <col style="width: 18%;">
+                <col style="width: 36%;">
+                <col style="width: 20%;">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th style="text-align: left;">Date</th>
+                    <th style="text-align: center;">Type</th>
+                    <th style="text-align: left;">Category</th>
+                    <th style="text-align: left;">Notes</th>
+                    <th style="text-align: right;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="text-align: left;">12/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Shopping</td>
+                    <td style="text-align: left;">Clothing purchase</td>
+                    <td style="text-align: right;">₹1,800</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">13/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Bills</td>
+                    <td style="text-align: left;">Mobile recharge</td>
+                    <td style="text-align: right;">₹999</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">14/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Food</td>
+                    <td style="text-align: left;">Party order</td>
+                    <td style="text-align: right;">₹750</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">15/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge income">IN</span></td>
+                    <td style="text-align: left;">Freelance</td>
+                    <td style="text-align: left;">Design project completed</td>
+                    <td style="text-align: right;">₹3,000</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">16/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Groceries</td>
+                    <td style="text-align: left;">Fresh vegetables</td>
+                    <td style="text-align: right;">₹1,560</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">17/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Entertainment</td>
+                    <td style="text-align: left;">Movie tickets</td>
+                    <td style="text-align: right;">₹800</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">18/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Transport</td>
+                    <td style="text-align: left;">Fuel refill</td>
+                    <td style="text-align: right;">₹2,000</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">19/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Food</td>
+                    <td style="text-align: left;">Quick lunch</td>
+                    <td style="text-align: right;">₹380</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">20/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Shopping</td>
+                    <td style="text-align: left;">Home essentials</td>
+                    <td style="text-align: right;">₹4,200</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">21/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Entertainment</td>
+                    <td style="text-align: left;">Music subscription</td>
+                    <td style="text-align: right;">₹199</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">22/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Groceries</td>
+                    <td style="text-align: left;">Daily essentials</td>
+                    <td style="text-align: right;">₹980</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">23/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Transport</td>
+                    <td style="text-align: left;">Monthly metro pass</td>
+                    <td style="text-align: right;">₹1,500</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">24/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Bills</td>
+                    <td style="text-align: left;">Electricity bill</td>
+                    <td style="text-align: right;">₹2,200</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">25/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Food</td>
+                    <td style="text-align: left;">Coffee meetup</td>
+                    <td style="text-align: right;">₹280</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">26/06/2026</td>
+                    <td style="text-align: center;"><span class="type-badge expense">EXP</span></td>
+                    <td style="text-align: left;">Health</td>
+                    <td style="text-align: left;">Gym membership</td>
+                    <td style="text-align: right;">₹2,500</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4">Total Income (12 transactions)</td>
+                    <td>₹50,000</td>
+                </tr>
+                <tr>
+                    <td colspan="4">Total Expenses (33 transactions)</td>
+                    <td>₹30,000</td>
+                </tr>
+                <tr>
+                    <td colspan="4">Net Savings</td>
+                    <td>₹20,000</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="pagination">Page 3 of 4</div>
+        <div class="report-footer">
+            FinanceTrack — Personal Finance Manager
+        </div>
+    </div>
+
+    <!-- PAGE 4: Payment Method Breakdown -->
+    <div class="page page-break">
+        <h2 class="section-header">Payment Method Breakdown</h2>
+        <table style="table-layout: fixed;">
+            <colgroup>
+                <col style="width: 40%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th style="text-align: left;">Payment Method</th>
+                    <th style="text-align: center;">Transactions</th>
+                    <th style="text-align: center;">%</th>
+                    <th style="text-align: right;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="text-align: left;">UPI</td>
+                    <td style="text-align: center;">18</td>
+                    <td style="text-align: center;">40%</td>
+                    <td style="text-align: right;">₹12,000</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">Cash</td>
+                    <td style="text-align: center;">10</td>
+                    <td style="text-align: center;">27%</td>
+                    <td style="text-align: right;">₹8,000</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">Credit Card</td>
+                    <td style="text-align: center;">5</td>
+                    <td style="text-align: center;">22%</td>
+                    <td style="text-align: right;">₹6,500</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">Debit Card</td>
+                    <td style="text-align: center;">3</td>
+                    <td style="text-align: center;">8%</td>
+                    <td style="text-align: right;">₹2,500</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">Bank Transfer</td>
+                    <td style="text-align: center;">2</td>
+                    <td style="text-align: center;">3%</td>
+                    <td style="text-align: right;">₹1,000</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td style="text-align: left;">TOTAL</td>
+                    <td style="text-align: center;">38</td>
+                    <td style="text-align: center;">100%</td>
+                    <td style="text-align: right;">₹30,000</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <br><br>
+
+        <div style="text-align: center; font-size: 10px; color: #94a3b8; margin-top: 20px;">
+            <p>This report was generated automatically. Please verify all transactions.</p>
+        </div>
+    </div>
+
+</body>
+</html>

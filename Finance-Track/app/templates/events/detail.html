@@ -1,0 +1,659 @@
+{% extends "base.html" %}
+
+{% block title %}Event Dashboard — FinanceTrack{% endblock %}
+
+{% block content %}
+<div id="event-page" class="space-y-6" data-event-id="{{ event_id }}">
+  <!-- Header -->
+  <div class="flex items-start justify-between gap-3">
+    <div class="flex items-start gap-3 min-w-0">
+      <a href="/events"
+        class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0 mt-0.5">
+        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </a>
+      <div class="min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <h1 id="event-name" class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate">Loading...
+          </h1>
+          <span id="event-status-badge"
+            class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 capitalize flex-shrink-0"></span>
+        </div>
+        <p id="event-meta" class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate"></p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 flex-shrink-0">
+      <button onclick="openInviteModal()"
+        class="btn-secondary text-xs sm:text-sm p-2 sm:p-2.5 flex items-center justify-center rounded-xl"
+        title="Invite Code">
+        <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+        </svg>
+      </button>
+      <a id="btn-add-expense" href="#"
+        class="btn-primary text-xs sm:text-sm px-3 py-2 flex items-center gap-1.5 whitespace-nowrap">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        <span> Expense</span>
+      </a>
+      <div class="relative">
+        <button onclick="toggleDropdown('actions-dropdown')"
+          class="btn-secondary text-xs sm:text-sm p-2 sm:p-2.5 flex items-center justify-center rounded-xl"
+          title="Settings / Actions">
+          <svg class="w-4 h-4 text-gray-600 dark:text-gray-300 flex-shrink-0" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
+        <div id="actions-dropdown"
+          class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl z-50 py-1.5">
+          <a id="link-members" href="#"
+            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197" />
+            </svg>
+            Manage Members
+          </a>
+          <a id="link-categories" href="#"
+            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            </svg>
+            Categories
+          </a>
+          <a id="link-settlements" href="#"
+            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+            Settlements
+          </a>
+          <a id="link-analytics" href="#"
+            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            Analytics
+          </a>
+          <a id="link-sharing" href="#"
+            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+            Sharing Codes
+          </a>
+          <div class="border-t border-gray-100 dark:border-gray-700/60 my-1"></div>
+          <a id="link-export" href="#"
+            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Export CSV
+          </a>
+          <button onclick="deleteEvent()"
+            class="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 w-full text-left">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            Delete Event
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Join Code Banner if available -->
+  <div id="join-code-banner"
+    class="hidden p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700/50 rounded-2xl flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <span class="text-xl">🔑</span>
+      <div>
+        <p class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">Join Code Active
+        </p>
+        <p class="text-sm text-gray-700 dark:text-gray-300">Invite code: <strong id="banner-code-text"
+            class="font-mono text-indigo-700 dark:text-indigo-300 font-bold text-base ml-1"></strong></p>
+      </div>
+    </div>
+    <button onclick="copyBannerCode()" class="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+      </svg>
+      Copy Code
+    </button>
+  </div>
+
+  <!-- Pending settlements alert -->
+  <div id="settlements-alert"
+    class="hidden bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-2xl p-4 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      <p id="settlements-alert-text" class="text-sm text-amber-800 dark:text-amber-200"></p>
+    </div>
+    <a id="link-settle" href="#"
+      class="text-sm font-semibold text-amber-700 dark:text-amber-300 hover:underline whitespace-nowrap">View
+      Settlements →</a>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="card p-5">
+      <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Spent</p>
+      <p id="stat-spent" class="text-2xl font-bold text-gray-900 dark:text-white mt-1">—</p>
+    </div>
+    <div class="card p-5">
+      <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Remaining</p>
+      <p id="stat-remaining" class="text-2xl font-bold text-gray-900 dark:text-white mt-1">—</p>
+    </div>
+    <div class="card p-5">
+      <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Members</p>
+      <p id="stat-members" class="text-2xl font-bold text-gray-900 dark:text-white mt-1">—</p>
+    </div>
+    <div class="card p-5">
+      <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Avg / Member</p>
+      <p id="stat-avg" class="text-2xl font-bold text-gray-900 dark:text-white mt-1">—</p>
+    </div>
+  </div>
+
+  <!-- Budget progress bar -->
+  <div id="budget-bar-container" class="card p-5 hidden">
+    <div class="flex justify-between items-center mb-2">
+      <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Budget Usage</span>
+      <span id="budget-pct-label" class="text-sm font-bold text-gray-900 dark:text-white"></span>
+    </div>
+    <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-3">
+      <div id="budget-bar" class="h-3 rounded-full transition-all duration-500" style="width:0%"></div>
+    </div>
+    <div id="budget-warnings" class="mt-2 space-y-1"></div>
+  </div>
+
+  <!-- Charts row -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="card p-5">
+      <h3 class="text-sm font-bold text-gray-800 dark:text-gray-200 mb-4">Expense by Category</h3>
+      <div id="chart-category" class="h-56"></div>
+    </div>
+    <div class="card p-5">
+      <h3 class="text-sm font-bold text-gray-800 dark:text-gray-200 mb-4">Daily Spending Trend</h3>
+      <div id="chart-daily" class="h-56"></div>
+    </div>
+  </div>
+
+  <!-- Member spending bar chart -->
+  <div class="card p-5">
+    <h3 class="text-sm font-bold text-gray-800 dark:text-gray-200 mb-4">Member Spending (Paid vs Owed)</h3>
+    <div id="chart-members" class="h-56"></div>
+  </div>
+
+  <!-- Recent expenses -->
+  <div class="card overflow-hidden">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <h3 class="font-bold text-gray-900 dark:text-white">Recent Expenses</h3>
+      <a id="link-all-expenses" href="#"
+        class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline">View all →</a>
+    </div>
+    <div id="recent-expenses-list" class="divide-y divide-gray-100 dark:divide-gray-700">
+      <div class="p-6 text-center text-gray-500 dark:text-gray-400 text-sm">Loading...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Invite Code Modal -->
+<div id="inviteModal"
+  class="hidden fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div
+    class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+    <div class="flex justify-between items-center">
+      <h3 class="text-lg font-bold text-gray-900 dark:text-white">Invite Members</h3>
+      <button onclick="closeInviteModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <p class="text-sm text-gray-500 dark:text-gray-400">Share this 6-character code with other users to let them join
+      this event from their accounts.</p>
+
+    <div
+      class="p-4 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700/50 rounded-xl text-center space-y-2">
+      <p class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">Active Join Code
+      </p>
+      <div class="flex items-center justify-center gap-3">
+        <span id="modalActiveInviteCode"
+          class="font-mono text-3xl font-bold text-indigo-700 dark:text-indigo-300 tracking-widest">—</span>
+        <button onclick="copyModalInviteCode()"
+          class="p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-800/40 rounded-lg transition-colors"
+          title="Copy Code">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="flex justify-between items-center pt-2">
+      <button onclick="generateNewInviteCode()" class="btn-secondary text-sm flex items-center gap-1.5">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Generate New Code
+      </button>
+      <button onclick="closeInviteModal()" class="btn-primary text-sm">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Expense Details Modal Popup -->
+<div id="expenseDetailModal"
+  class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 overflow-y-auto hidden">
+  <div class="flex min-h-full items-center justify-center p-4">
+    <div
+      class="bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full max-h-full flex flex-col overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-700 animate-in fade-in zoom-in duration-150">
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-start justify-between flex-shrink-0">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span id="modalCatDot" class="w-3 h-3 rounded-full flex-shrink-0"></span>
+          <span id="modalCatName"
+            class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400"></span>
+        </div>
+        <h3 id="modalTitle" class="text-xl font-bold text-gray-900 dark:text-white">Expense Details</h3>
+      </div>
+      <button onclick="closeExpenseModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="p-6 space-y-5 flex-1 min-h-0 overflow-y-auto">
+      <!-- Amount and Date Banner -->
+      <div
+        class="flex items-center justify-between p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
+        <div>
+          <p class="text-xs font-medium text-indigo-600 dark:text-indigo-400">Total Amount</p>
+          <p id="modalAmount" class="text-2xl font-black text-gray-900 dark:text-white">₹0.00</p>
+        </div>
+        <div class="text-right">
+          <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Paid By</p>
+          <div class="flex items-center gap-1.5 mt-0.5 justify-end">
+            <span id="modalPaidDot" class="w-2.5 h-2.5 rounded-full flex-shrink-0"></span>
+            <span id="modalPaidName" class="text-sm font-bold text-gray-900 dark:text-white"></span>
+          </div>
+          <p id="modalDate" class="text-xs text-gray-400 mt-0.5"></p>
+        </div>
+      </div>
+
+      <!-- Note & Description -->
+      <div id="modalNoteBox" class="space-y-2">
+        <div id="modalNoteSection" class="hidden">
+          <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Note</p>
+          <p id="modalNote" class="text-sm text-gray-800 dark:text-gray-200 font-medium"></p>
+        </div>
+        <div id="modalDescSection" class="hidden pt-2 border-t border-gray-100 dark:border-gray-700/60">
+          <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Description</p>
+          <p id="modalDesc" class="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap mt-0.5"></p>
+        </div>
+      </div>
+
+      <!-- Split Breakdown Table -->
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Split Breakdown (<span
+            id="modalSplitType" class="capitalize"></span>)</p>
+        <div id="modalSplitsList"
+          class="space-y-1.5 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-200 dark:border-gray-700">
+        </div>
+      </div>
+
+      <!-- Attachment Preview -->
+      <div id="modalAttachmentSection" class="hidden space-y-2">
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Bill Attachment</p>
+        <div id="modalAttachmentBody"></div>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.1/dist/apexcharts.min.js"></script>
+<script>
+  const EVENT_ID = {{ event_id }};
+  let dashboardData = null;
+
+  const STATUS_COLORS = {
+    planning: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    active: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    completed: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
+    archived: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  };
+
+  function toggleDropdown(id) {
+    const el = document.getElementById(id);
+    el.classList.toggle('hidden');
+    document.addEventListener('click', function closeDD(e) {
+      if (!el.contains(e.target) && !e.target.closest('[onclick*="toggleDropdown"]')) {
+        el.classList.add('hidden');
+        document.removeEventListener('click', closeDD);
+      }
+    });
+  }
+
+  function setLinks() {
+    const base = `/events/${EVENT_ID}`;
+    document.getElementById('btn-add-expense').href = `${base}/expenses/add`;
+    document.getElementById('link-members').href = `${base}/members`;
+    document.getElementById('link-categories').href = `${base}/categories`;
+    document.getElementById('link-settlements').href = `${base}/settlements`;
+    document.getElementById('link-analytics').href = `${base}/analytics`;
+    document.getElementById('link-sharing').href = `${base}/sharing`;
+    document.getElementById('link-settle').href = `${base}/settlements`;
+    document.getElementById('link-all-expenses').href = `${base}/expenses`;
+    document.getElementById('link-export').href = `/api/v1/events/${EVENT_ID}/export?format=csv`;
+  }
+
+  async function loadEvent() {
+    const [eventRes, dashRes] = await Promise.all([
+      api.get(`/events/${EVENT_ID}`),
+      api.get(`/events/${EVENT_ID}/dashboard`),
+    ]);
+
+    if (!eventRes.success) {
+      showToast('Failed to load event', 'error');
+      return;
+    }
+
+    const e = eventRes.data;
+    document.getElementById('event-name').textContent = e.name;
+    document.getElementById('event-meta').textContent = [
+      e.start_date ? `${new Date(e.start_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}` : '',
+      e.end_date ? `– ${new Date(e.end_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}` : '',
+      e.currency || 'INR',
+    ].filter(Boolean).join(' · ');
+
+    const badge = document.getElementById('event-status-badge');
+    badge.textContent = e.status;
+    badge.className = `px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${STATUS_COLORS[e.status] || STATUS_COLORS.planning}`;
+
+    if (e.join_code) {
+      document.getElementById('banner-code-text').textContent = e.join_code;
+      document.getElementById('modalActiveInviteCode').textContent = e.join_code;
+      document.getElementById('join-code-banner').classList.remove('hidden');
+    }
+
+    if (!dashRes.success) return;
+    dashboardData = dashRes.data;
+    const s = dashboardData.summary;
+
+    document.getElementById('stat-spent').textContent = `₹${s.total_spent.toLocaleString('en-IN')}`;
+    document.getElementById('stat-members').textContent = s.member_count;
+    document.getElementById('stat-avg').textContent = `₹${s.avg_per_member.toLocaleString('en-IN')}`;
+    document.getElementById('stat-remaining').textContent = s.remaining != null ? `₹${s.remaining.toLocaleString('en-IN')}` : '—';
+
+    if (s.percent_used != null) {
+      document.getElementById('budget-bar-container').classList.remove('hidden');
+      const bar = document.getElementById('budget-bar');
+      bar.style.width = `${Math.min(100, s.percent_used)}%`;
+      bar.className = `h-3 rounded-full transition-all duration-500 ${s.percent_used >= 100 ? 'bg-red-500' : s.percent_used >= 90 ? 'bg-yellow-500' : 'bg-green-500'}`;
+      document.getElementById('budget-pct-label').textContent = `${s.percent_used}%`;
+      if (s.warnings?.length) {
+        document.getElementById('budget-warnings').innerHTML = s.warnings.map(w =>
+          `<p class="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1 font-medium"><svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>${w}</p>`
+        ).join('');
+      }
+    }
+
+    if (s.pending_settlements > 0) {
+      document.getElementById('settlements-alert').classList.remove('hidden');
+      document.getElementById('settlements-alert-text').textContent = `${s.pending_settlements} pending settlement${s.pending_settlements > 1 ? 's' : ''} — calculate who owes whom`;
+    }
+
+    renderCharts();
+    renderRecentExpenses();
+  }
+
+  function renderCharts() {
+    const isDark = document.documentElement.classList.contains('dark');
+    const textColor = isDark ? '#cbd5e1' : '#6b7280';
+    const gridColor = isDark ? '#334155' : '#f3f4f6';
+
+    const cats = dashboardData.category_breakdown;
+    if (cats.length) {
+      new ApexCharts(document.getElementById('chart-category'), {
+        chart: { type: 'donut', height: 220, background: 'transparent' },
+        series: cats.map(c => c.total),
+        labels: cats.map(c => c.name),
+        colors: cats.map(c => c.color || '#6366f1'),
+        legend: { position: 'bottom', labels: { colors: textColor } },
+        theme: { mode: isDark ? 'dark' : 'light' },
+        dataLabels: { enabled: false },
+        stroke: { show: true, colors: [isDark ? '#1e293b' : '#ffffff'] },
+        tooltip: { theme: isDark ? 'dark' : 'light', y: { formatter: v => `₹${v.toLocaleString('en-IN')}` } },
+      }).render();
+    } else {
+      document.getElementById('chart-category').innerHTML = '<div class="flex items-center justify-center h-full text-gray-400 text-sm">No expenses yet</div>';
+    }
+
+    const daily = dashboardData.daily_spending;
+    if (daily.length) {
+      new ApexCharts(document.getElementById('chart-daily'), {
+        chart: { type: 'area', height: 220, background: 'transparent', toolbar: { show: false } },
+        series: [{ name: 'Spent', data: daily.map(d => d.total) }],
+        xaxis: { categories: daily.map(d => d.date), labels: { style: { colors: textColor }, rotate: -30 } },
+        yaxis: { labels: { style: { colors: textColor }, formatter: v => `₹${v.toLocaleString('en-IN')}` } },
+        grid: { borderColor: gridColor },
+        stroke: { curve: 'smooth', width: 3 },
+        markers: { size: daily.length === 1 ? 6 : 4, hover: { size: 7 } },
+        colors: ['#6366f1'],
+        fill: { type: 'gradient', gradient: { opacityFrom: 0.4, opacityTo: 0.05 } },
+        theme: { mode: isDark ? 'dark' : 'light' },
+        tooltip: { theme: isDark ? 'dark' : 'light', y: { formatter: v => `₹${v.toLocaleString('en-IN')}` } },
+      }).render();
+    } else {
+      document.getElementById('chart-daily').innerHTML = '<div class="flex items-center justify-center h-full text-gray-400 text-sm">No expenses yet</div>';
+    }
+
+    const members = dashboardData.member_spending;
+    if (members.length) {
+      new ApexCharts(document.getElementById('chart-members'), {
+        chart: { type: 'bar', height: 220, background: 'transparent', toolbar: { show: false } },
+        series: [
+          { name: 'Paid', data: members.map(m => m.paid) },
+          { name: 'Owed', data: members.map(m => m.owed) },
+        ],
+        xaxis: { categories: members.map(m => m.name), labels: { style: { colors: textColor } } },
+        yaxis: { labels: { style: { colors: textColor }, formatter: v => `₹${v.toLocaleString('en-IN')}` } },
+        grid: { borderColor: gridColor },
+        colors: ['#6366f1', '#f59e0b'],
+        legend: { labels: { colors: textColor } },
+        theme: { mode: isDark ? 'dark' : 'light' },
+        tooltip: { theme: isDark ? 'dark' : 'light', y: { formatter: v => `₹${v.toLocaleString('en-IN')}` } },
+        plotOptions: { bar: { columnWidth: '60%', borderRadius: 4 } },
+      }).render();
+    } else {
+      document.getElementById('chart-members').innerHTML = '<div class="flex items-center justify-center h-full text-gray-400 text-sm">No data</div>';
+    }
+  }
+
+  function renderRecentExpenses() {
+    const expenses = dashboardData.recent_expenses;
+    const container = document.getElementById('recent-expenses-list');
+    if (!expenses.length) {
+      container.innerHTML = `<div class="p-6 text-center text-gray-500 dark:text-gray-400 text-sm">No expenses yet — <a href="/events/${EVENT_ID}/expenses/add" class="text-primary-600 hover:underline font-medium">Add your first expense</a></div>`;
+      return;
+    }
+    container.innerHTML = expenses.map(e => {
+      const catName = e.category_name || e.category?.name || 'Uncategorized';
+      const catColor = e.category_color || e.category?.color || '#6366f1';
+      const title = e.merchant || catName;
+      const paidBy = e.paid_by_name || 'Member';
+      const dateStr = e.date ? new Date(e.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '';
+      const hasReceipt = Boolean(e.receipt_image);
+
+      return `
+    <div onclick="viewExpenseDetails(${e.id})" class="px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors cursor-pointer group">
+      <div class="flex items-center gap-3.5">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm flex-shrink-0" style="background-color: ${catColor}">
+          ${catName.charAt(0).toUpperCase()}
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <p class="text-sm font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">${escapeHtml(title)}</p>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">${escapeHtml(catName)}</span>
+            ${hasReceipt ? '<span class="text-xs text-indigo-500" title="Bill attached">📎</span>' : ''}
+          </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            Paid by <span class="font-medium text-gray-700 dark:text-gray-300">${escapeHtml(paidBy)}</span> · ${dateStr}
+          </p>
+        </div>
+      </div>
+      <div class="text-right flex-shrink-0 ml-4">
+        <span class="text-base font-bold text-gray-900 dark:text-white">₹${Number(e.amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+      </div>
+    </div>
+  `;
+    }).join('');
+  }
+
+  async function viewExpenseDetails(expenseId) {
+    const res = await api.get(`/events/${EVENT_ID}/expenses/${expenseId}`);
+    if (!res.success) { showToast('Could not load expense details', 'error'); return; }
+    const e = res.data;
+
+    document.getElementById('modalCatDot').style.background = e.category_color || '#94a3b8';
+    document.getElementById('modalCatName').textContent = e.category_name || 'Uncategorized';
+    document.getElementById('modalTitle').textContent = e.merchant || e.note || 'Expense Details';
+    document.getElementById('modalAmount').textContent = `₹${Number(e.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+    document.getElementById('modalPaidDot').style.background = e.paid_by_color || '#6366f1';
+    document.getElementById('modalPaidName').textContent = e.paid_by_name || 'Member';
+    document.getElementById('modalDate').textContent = e.date || '';
+
+    const noteSec = document.getElementById('modalNoteSection');
+    const descSec = document.getElementById('modalDescSection');
+    if (e.note) { document.getElementById('modalNote').textContent = e.note; noteSec.classList.remove('hidden'); }
+    else { noteSec.classList.add('hidden'); }
+
+    if (e.description) { document.getElementById('modalDesc').textContent = e.description; descSec.classList.remove('hidden'); }
+    else { descSec.classList.add('hidden'); }
+
+    document.getElementById('modalSplitType').textContent = e.split_type || 'equal';
+    const splitsList = document.getElementById('modalSplitsList');
+    splitsList.innerHTML = (e.splits || []).map(s => `
+    <div class="flex items-center justify-between text-xs py-1">
+      <span class="font-medium text-gray-700 dark:text-gray-300">${s.member_name}</span>
+      <span class="font-bold text-gray-900 dark:text-white">₹${Number(s.amount).toFixed(2)}</span>
+    </div>
+  `).join('') || '<p class="text-xs text-gray-400">No split details</p>';
+
+    const attSec = document.getElementById('modalAttachmentSection');
+    const attBody = document.getElementById('modalAttachmentBody');
+    if (e.receipt_image) {
+      const isPdf = e.receipt_image.toLowerCase().endsWith('.pdf');
+      attSec.classList.remove('hidden');
+      if (isPdf) {
+        attBody.innerHTML = `
+        <a href="${e.receipt_image}" target="_blank" class="flex items-center gap-3 p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl border border-indigo-200 dark:border-indigo-700 hover:bg-indigo-100 transition-colors">
+          <span class="text-2xl">📕</span>
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-bold text-indigo-700 dark:text-indigo-300 truncate">${e.receipt_image.split('/').pop()}</p>
+            <p class="text-[11px] text-gray-500">Click to view/download PDF document</p>
+          </div>
+          <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+      `;
+      } else {
+        attBody.innerHTML = `
+        <div class="relative group rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-black/5 dark:bg-black/30">
+          <img src="${e.receipt_image}" alt="Bill Receipt" class="w-full max-h-64 object-contain mx-auto rounded-xl">
+          <a href="${e.receipt_image}" target="_blank" class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            Open Full Resolution
+          </a>
+        </div>
+      `;
+      }
+    } else {
+      attSec.classList.add('hidden');
+    }
+
+    document.getElementById('expenseDetailModal').classList.remove('hidden');
+  }
+
+  function closeExpenseModal() {
+    document.getElementById('expenseDetailModal').classList.add('hidden');
+  }
+
+  async function deleteEvent() {
+    if (!confirm('Delete this event and all its data? This cannot be undone.')) return;
+    const res = await api.delete(`/events/${EVENT_ID}`);
+    if (res.success) {
+      showToast('Event deleted', 'success');
+      setTimeout(() => window.location.href = '/events', 400);
+    } else {
+      showToast(res.error?.message || 'Failed to delete', 'error');
+    }
+  }
+
+  async function openInviteModal() {
+    document.getElementById('inviteModal').classList.remove('hidden');
+    const res = await api.get(`/events/${EVENT_ID}/join-codes`);
+    if (res.success && res.data.length) {
+      const active = res.data.find(c => c.is_active);
+      if (active) {
+        document.getElementById('modalActiveInviteCode').textContent = active.code;
+        return;
+      }
+    }
+    generateNewInviteCode();
+  }
+
+  function closeInviteModal() {
+    document.getElementById('inviteModal').classList.add('hidden');
+  }
+
+  async function generateNewInviteCode() {
+    const res = await api.post(`/events/${EVENT_ID}/join-codes`, { max_uses: 10 });
+    if (res.success) {
+      document.getElementById('modalActiveInviteCode').textContent = res.data.code;
+      document.getElementById('banner-code-text').textContent = res.data.code;
+      document.getElementById('join-code-banner').classList.remove('hidden');
+      showToast('New join code generated!', 'success');
+    } else {
+      showToast(res.error?.message || 'Failed to generate code', 'error');
+    }
+  }
+
+  function copyBannerCode() {
+    const code = document.getElementById('banner-code-text').textContent;
+    if (code) navigator.clipboard.writeText(code).then(() => showToast('Join code copied!', 'success'));
+  }
+
+  function copyModalInviteCode() {
+    const code = document.getElementById('modalActiveInviteCode').textContent;
+    if (code && code !== '—') navigator.clipboard.writeText(code).then(() => showToast('Join code copied!', 'success'));
+  }
+
+  setLinks();
+  loadEvent();
+</script>
+{% endblock %}

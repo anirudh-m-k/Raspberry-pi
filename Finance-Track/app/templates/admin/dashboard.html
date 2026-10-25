@@ -1,0 +1,98 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Dashboard - Admin{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
+        <p class="text-gray-600 dark:text-gray-400 text-sm">System overview</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="card p-5">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500">Total Users</p>
+                    <p id="total-users" class="text-2xl font-bold text-gray-900 dark:text-white">-</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-5">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500">Active Today</p>
+                    <p id="active-today" class="text-2xl font-bold text-gray-900 dark:text-white">-</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-5">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500">New This Week</p>
+                    <p id="new-this-week" class="text-2xl font-bold text-gray-900 dark:text-white">-</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <a href="/admin/users" class="card-hover p-5 flex items-center gap-4">
+            <div class="w-10 h-10 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-900 dark:text-white">Manage Users</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">View, activate, or deactivate users</p>
+            </div>
+        </a>
+
+        <a href="/admin/audit" class="card-hover p-5 flex items-center gap-4">
+            <div class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                </svg>
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-900 dark:text-white">Audit Logs</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Track user actions and system events</p>
+            </div>
+        </a>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const result = await api.get('/admin/dashboard');
+        const data = result.data;
+        document.getElementById('total-users').textContent = data.total_users;
+        document.getElementById('active-today').textContent = data.active_users_today;
+        document.getElementById('new-this-week').textContent = data.new_users_this_week;
+    } catch (e) {
+        showFlash('Failed to load dashboard', 'error');
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,438 @@
+{% extends "base.html" %}
+
+{% block title %}Savings Pot Details - FinanceTrack{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <div class="mb-6">
+        <a href="/savings-pots" class="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Back to Savings Pots
+        </a>
+    </div>
+
+    <!-- Pot Header -->
+    <div class="card p-6">
+        <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <div id="pot-icon" class="w-12 h-12 rounded-xl flex items-center justify-center bg-blue-500">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 id="pot-title" class="text-2xl font-bold text-gray-900 dark:text-white"></h1>
+                    <p id="pot-description" class="text-gray-600 dark:text-gray-400 mt-1"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <p class="text-xs text-gray-500 uppercase tracking-wide">Current Balance</p>
+                <div class="flex items-center gap-2 mt-1">
+                    <button onclick="toggleDetailBalance()" class="eye-btn p-1 rounded hover:bg-gray-100 dark:hover:bg-surface-dark-hover" title="Toggle visibility" id="detail-eye-btn">
+                        <svg class="eye-open w-4 h-4 text-gray-400 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        <svg class="eye-closed w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                    </button>
+                    <p id="pot-balance" class="text-3xl font-bold text-gray-900 dark:text-white"></p>
+                </div>
+                <!-- Planned amount — hover-reveal on detail header -->
+                <div id="detail-target-row" class="mt-2 flex items-center gap-2 group/detail">
+                    <span class="text-xs text-gray-500">Planned:</span>
+                    <button id="detail-target-btn" onclick="handleDetailTargetClick()"
+                        class="flex items-center justify-center min-w-[2.5rem] h-6 px-2 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 text-xs font-medium text-gray-600 dark:text-gray-400 hover:border-primary-400 hover:text-primary-600 dark:hover:text-primary-400 transition
+                               opacity-100 md:opacity-0 md:group-hover/detail:opacity-100 focus:opacity-100"
+                        title="Set planned amount — click to edit">+</button>
+                    <div id="detail-target-edit" class="hidden items-center gap-1">
+                        <span class="text-xs text-gray-500">₹</span>
+                        <input id="detail-target-input" type="number" step="0.01" min="0.01" placeholder="0.00"
+                            class="w-28 px-2 py-1 text-xs bg-white dark:bg-surface-dark border border-primary-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900 dark:text-gray-100"
+                            onkeydown="handleDetailTargetKeydown(event)">
+                        <button onclick="saveDetailTarget()" class="p-1 rounded hover:bg-green-100 dark:hover:bg-green-900/20" title="Save">
+                            <svg class="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        </button>
+                        <button onclick="cancelDetailTarget()" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-surface-dark-hover" title="Cancel">
+                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                    <span id="detail-target-remaining" class="hidden text-xs text-gray-500"></span>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="text-xs text-gray-500 uppercase tracking-wide">Created</p>
+                <p id="pot-created" class="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <button onclick="showDepositModal()" class="btn-primary flex-1">Deposit</button>
+            <button onclick="showWithdrawModal()" class="btn-secondary flex-1">Withdraw</button>
+            <a id="pot-edit-btn" href="#" class="btn-secondary flex-1 text-center">Edit</a>
+            <button onclick="deletePot()" class="btn-danger flex-1">Delete</button>
+        </div>
+    </div>
+
+    <!-- Transaction History -->
+    <div class="card overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Transaction History</h2>
+        </div>
+        <div id="transactions-list">
+        </div>
+        <div id="tx-load-more" class="text-center py-3 hidden border-t border-gray-200 dark:border-gray-700">
+            <button onclick="loadMoreTransactions()" class="text-sm text-primary-600 hover:text-primary-700 font-medium">Load More</button>
+        </div>
+    </div>
+</div>
+
+{% include 'components/modal.html' %}
+
+<script>
+let potId = window.location.pathname.split('/')[2];
+let potData = null;
+let txPage = 1;
+let txHasNext = false;
+
+const potColors = ['bg-blue-500', 'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500', 'bg-orange-500'];
+
+document.addEventListener('DOMContentLoaded', function() {
+    setPageTitle('Savings Pot Details');
+    loadAccounts();
+    loadPot();
+});
+
+function toggleDetailBalance() {
+    const balanceEl = document.getElementById('pot-balance');
+    const currentText = balanceEl.textContent.trim();
+
+    // If currently showing mask, restore original
+    if (currentText === '••••••') {
+        balanceEl.textContent = balanceEl.dataset.original || '₹0.00';
+        document.querySelector('#detail-eye-btn .eye-open').classList.remove('hidden');
+        document.querySelector('#detail-eye-btn .eye-closed').classList.add('hidden');
+        localStorage.setItem('eye_pot_detail_hidden', 'false');
+    } else {
+        // Save original and mask
+        balanceEl.dataset.original = currentText;
+        balanceEl.textContent = '••••••';
+        document.querySelector('#detail-eye-btn .eye-open').classList.add('hidden');
+        document.querySelector('#detail-eye-btn .eye-closed').classList.remove('hidden');
+        localStorage.setItem('eye_pot_detail_hidden', 'true');
+    }
+}
+
+async function loadPot() {
+    try {
+        const result = await api.get(`/savings-pots/${potId}`);
+        potData = result.data;
+        renderPot();
+        loadTransactions(1);
+    } catch (e) {
+        showFlash('Failed to load savings pot', 'error');
+        setTimeout(() => window.location.href = '/savings-pots', 1000);
+    }
+}
+
+function renderPot() {
+    const p = potData;
+
+    document.getElementById('pot-title').textContent = p.name;
+    document.getElementById('pot-description').textContent = p.description || '';
+    document.getElementById('pot-balance').textContent = formatCurrency(p.balance);
+    document.getElementById('pot-balance').dataset.original = formatCurrency(p.balance);
+    document.getElementById('pot-balance').textContent = '••••••';
+    document.querySelector('#detail-eye-btn .eye-open').classList.add('hidden');
+    document.querySelector('#detail-eye-btn .eye-closed').classList.remove('hidden');
+    document.getElementById('pot-created').textContent = formatDate(p.created_at);
+
+    // Planned amount button
+    const targetBtn = document.getElementById('detail-target-btn');
+    const remainingEl = document.getElementById('detail-target-remaining');
+    if (p.target_amount != null && Number(p.target_amount) > 0) {
+        targetBtn.textContent = formatCurrency(p.target_amount);
+        targetBtn.title = `Planned: ${formatCurrency(p.target_amount)} — click to edit`;
+        const remaining = Number(p.target_amount) - Number(p.balance);
+        if (remainingEl) {
+            if (remaining > 0) {
+                remainingEl.textContent = `${formatCurrency(remaining)} more to reach planned`;
+                remainingEl.classList.remove('hidden');
+            } else {
+                remainingEl.textContent = 'Planned amount reached ✓';
+                remainingEl.classList.remove('hidden');
+                remainingEl.classList.add('text-success');
+            }
+        }
+    } else {
+        targetBtn.textContent = '+';
+        targetBtn.title = 'Set planned amount — click to add';
+        if (remainingEl) remainingEl.classList.add('hidden');
+    }
+
+    const colorIndex = p.id % potColors.length;
+    document.getElementById('pot-icon').className = `w-12 h-12 rounded-xl flex items-center justify-center ${potColors[colorIndex]}`;
+
+    document.getElementById('pot-edit-btn').href = `/savings-pots/${p.id}/edit`;
+}
+
+function handleDetailTargetClick() {
+    const btn = document.getElementById('detail-target-btn');
+    const editWrap = document.getElementById('detail-target-edit');
+    const input = document.getElementById('detail-target-input');
+    if (!btn || !editWrap || !input) return;
+    const current = potData && potData.target_amount != null ? String(potData.target_amount) : '';
+    btn.classList.add('hidden');
+    editWrap.classList.remove('hidden');
+    editWrap.classList.add('flex');
+    input.value = current;
+    input.focus();
+    input.select();
+}
+function cancelDetailTarget() {
+    const btn = document.getElementById('detail-target-btn');
+    const editWrap = document.getElementById('detail-target-edit');
+    if (!btn || !editWrap) return;
+    editWrap.classList.add('hidden');
+    editWrap.classList.remove('flex');
+    btn.classList.remove('hidden');
+}
+function handleDetailTargetKeydown(e) {
+    if (e.key === 'Enter') { e.preventDefault(); saveDetailTarget(); }
+    else if (e.key === 'Escape') cancelDetailTarget();
+}
+async function saveDetailTarget() {
+    const input = document.getElementById('detail-target-input');
+    if (!input) return;
+    const raw = input.value.trim();
+    const payload = raw === '' ? { target_amount: null } : { target_amount: parseFloat(raw) };
+    if (payload.target_amount !== null && (isNaN(payload.target_amount) || payload.target_amount <= 0)) {
+        showFlash('Planned amount must be a positive number', 'error');
+        return;
+    }
+    input.disabled = true;
+    try {
+        const result = await api.put(`/savings-pots/${potId}`, payload);
+        potData.target_amount = result.data.target_amount;
+        showFlash(payload.target_amount === null ? 'Planned amount cleared' : 'Planned amount saved', 'success');
+        renderPot();
+        cancelDetailTarget();
+        document.getElementById('detail-target-btn').classList.remove('hidden');
+        document.getElementById('detail-target-edit').classList.add('hidden');
+        document.getElementById('detail-target-edit').classList.remove('flex');
+    } catch (error) {
+        showFlash(error.error?.message || 'Failed to save planned amount', 'error');
+        input.disabled = false;
+        input.focus();
+    } finally {
+        input.disabled = false;
+    }
+}
+
+async function loadTransactions(page) {
+    try {
+        const result = await api.get(`/savings-pots/${potId}/transactions?page=${page}&per_page=20`);
+        renderTransactions(result.data, page > 1);
+    } catch (e) {
+        document.getElementById('transactions-list').innerHTML = '<p class="text-center py-8 text-gray-500">Failed to load transactions</p>';
+    }
+}
+
+function renderTransactions(data, append) {
+    const list = document.getElementById('transactions-list');
+    const loadMore = document.getElementById('tx-load-more');
+
+    if (!append) list.innerHTML = '';
+
+    if (!data.transactions || data.transactions.length === 0) {
+        if (!append) list.innerHTML = '<p class="text-center py-8 text-gray-500">No transactions yet</p>';
+        loadMore.classList.add('hidden');
+        return;
+    }
+
+    const html = data.transactions.map(t => {
+        const isDeposit = t.type === 'deposit';
+        return `
+            <div class="flex items-center justify-between px-6 py-3 border-b border-gray-100 dark:border-gray-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center ${isDeposit ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'}">
+                        ${isDeposit
+                            ? '<svg class="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>'
+                            : '<svg class="w-4 h-4 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>'
+                        }
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-900 dark:text-white capitalize">${t.type}</p>
+                        <p class="text-xs text-gray-500">${formatDate(t.date)}${t.notes ? ' — ' + escapeHtml(t.notes) : ''}</p>
+                    </div>
+                </div>
+                <span class="text-sm font-semibold ${isDeposit ? 'text-success' : 'text-danger'}">
+                    ${isDeposit ? '+' : '-'}${formatCurrency(Math.abs(t.amount))}
+                </span>
+            </div>
+        `;
+    }).join('');
+
+    if (append) {
+        list.insertAdjacentHTML('beforeend', html);
+    } else {
+        list.innerHTML = html;
+    }
+
+    txHasNext = data.has_next;
+    txPage = data.page;
+    if (data.has_next) {
+        loadMore.classList.remove('hidden');
+    } else {
+        loadMore.classList.add('hidden');
+    }
+}
+
+async function loadMoreTransactions() {
+    const loadMore = document.getElementById('tx-load-more');
+    loadMore.innerHTML = '<p class="text-gray-500 text-sm">Loading...</p>';
+
+    try {
+        const nextPage = txPage + 1;
+        const result = await api.get(`/savings-pots/${potId}/transactions?page=${nextPage}&per_page=20`);
+        renderTransactions(result.data, true);
+        loadMore.innerHTML = '<button onclick="loadMoreTransactions()" class="text-sm text-primary-600 hover:text-primary-700 font-medium">Load More</button>';
+    } catch (e) {
+        loadMore.innerHTML = '<p class="text-red-500 text-sm">Failed to load</p>';
+    }
+}
+
+let accountsList = [];
+
+async function loadAccounts() {
+    try {
+        const result = await api.get('/accounts');
+        accountsList = result.data || [];
+    } catch (e) {
+        accountsList = [];
+    }
+}
+
+function getAccountOptions() {
+    return accountsList.map(a => `<option value="${a.id}">${a.name} (${formatCurrency(a.balance)})</option>`).join('');
+}
+
+function showDepositModal() {
+    openModal(`Deposit to ${potData.name}`, `
+        <form onsubmit="handleDeposit(event)" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">From Account</label>
+                <select name="account_id" class="input-field">
+                    <option value="">Don't deduct from account</option>
+                    ${getAccountOptions()}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Amount</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                    <input type="number" name="amount" step="0.01" min="0.01" required placeholder="0.00" class="input-field pl-8">
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-3">
+                <button type="button" onclick="closeModal()" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Deposit</button>
+            </div>
+        </form>
+    `);
+}
+
+function showWithdrawModal() {
+    openModal(`Withdraw from ${potData.name}`, `
+        <form onsubmit="handleWithdraw(event)" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">To Account</label>
+                <select name="account_id" class="input-field">
+                    <option value="">Don't add to account</option>
+                    ${getAccountOptions()}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Amount</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                    <input type="number" name="amount" step="0.01" min="0.01" max="${potData.balance}" required placeholder="0.00" class="input-field pl-8">
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Available: ${formatCurrency(potData.balance)}</p>
+            </div>
+            <div class="flex items-center justify-end gap-3">
+                <button type="button" onclick="closeModal()" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-danger">Withdraw</button>
+            </div>
+        </form>
+    `);
+}
+
+async function handleDeposit(e) {
+    e.preventDefault();
+    try {
+        const data = { amount: parseFloat(e.target.amount.value) };
+        if (e.target.account_id.value) data.account_id = parseInt(e.target.account_id.value);
+        await api.post(`/savings-pots/${potId}/deposit`, data);
+        closeModal();
+        showFlash('Deposit successful!', 'success');
+        loadPot();
+    } catch (error) {
+        showFlash(error.error?.message || 'Failed', 'error');
+    }
+}
+
+async function handleWithdraw(e) {
+    e.preventDefault();
+    try {
+        const data = { amount: parseFloat(e.target.amount.value) };
+        if (e.target.account_id.value) data.account_id = parseInt(e.target.account_id.value);
+        await api.post(`/savings-pots/${potId}/withdraw`, data);
+        closeModal();
+        showFlash('Withdrawal successful!', 'success');
+        loadPot();
+    } catch (error) {
+        showFlash(error.error?.message || 'Failed', 'error');
+    }
+}
+
+function deletePot() {
+    const hasBalance = potData && potData.balance > 0;
+
+    openModal('Delete Savings Pot', `
+        <p class="text-gray-600 dark:text-gray-400 mb-4">Are you sure you want to delete this savings pot?</p>
+        ${hasBalance ? `
+            <div class="mb-4 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800">
+                <p class="text-sm text-yellow-800 dark:text-yellow-400">Remaining balance: ${formatCurrency(potData.balance)}</p>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Refund balance to account</label>
+                <select id="refund-account" class="input-field">
+                    <option value="">Don't refund (balance will be lost)</option>
+                    ${getAccountOptions()}
+                </select>
+            </div>
+        ` : ''}
+        <div class="flex items-center justify-end gap-3">
+            <button type="button" onclick="closeModal()" class="btn-secondary">Cancel</button>
+            <button type="button" onclick="executeDeletePot()" class="btn-danger">Delete</button>
+        </div>
+    `);
+}
+
+async function executeDeletePot() {
+    const refundSelect = document.getElementById('refund-account');
+    const accountId = refundSelect ? refundSelect.value : '';
+    try {
+        const url = accountId ? `/savings-pots/${potId}?account_id=${accountId}` : `/savings-pots/${potId}`;
+        await api.delete(url);
+        closeModal();
+        showFlash('Savings pot deleted', 'success');
+        setTimeout(() => window.location.href = '/savings-pots', 500);
+    } catch (e) {
+        showFlash('Failed to delete', 'error');
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Add Account - FinanceTrack{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+        <a href="/accounts" class="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Back to Accounts
+        </a>
+    </div>
+
+    <div class="card p-6 sm:p-8">
+        <h1 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Add New Account</h1>
+
+        <form onsubmit="handleSubmit(event)" class="space-y-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Account Name *</label>
+                    <input type="text" name="name" required placeholder="e.g., SBI Savings" class="input-field">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Account Type *</label>
+                    <select name="type" required class="input-field">
+                        <option value="bank">Bank Account</option>
+                        <option value="cash">Cash</option>
+                        <option value="credit_card">Credit Card</option>
+                        <option value="upi">UPI</option>
+                        <option value="wallet">Wallet</option>
+                        <option value="investment">Investment</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Current Balance</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                        <input type="number" name="balance" step="0.01" value="0" class="input-field pl-8">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Currency</label>
+                    <select name="currency" class="input-field">
+                        <option value="INR">INR (₹)</option>
+                        <option value="USD">USD ($)</option>
+                        <option value="EUR">EUR (€)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Institution / Bank Name</label>
+                <input type="text" name="institution" placeholder="e.g., State Bank of India" class="input-field">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Notes</label>
+                <textarea name="notes" rows="3" placeholder="Add any notes..." class="input-field"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <a href="/accounts" class="btn-secondary">Cancel</a>
+                <button type="submit" class="btn-primary">
+                    <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Save Account
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    setPageTitle('Add Account');
+});
+
+async function handleSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const btn = form.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML = '<svg class="w-4 h-4 inline-block mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Saving...';
+
+    try {
+        const data = {
+            name: form.name.value.trim(),
+            type: form.type.value,
+            balance: parseFloat(form.balance.value) || 0,
+            currency: form.currency.value,
+            institution: form.institution.value || null,
+            notes: form.notes.value || null,
+        };
+
+        await api.post('/accounts', data);
+        showFlash('Account created successfully!', 'success');
+        setTimeout(() => window.location.href = '/accounts', 500);
+    } catch (error) {
+        showFlash(error.error?.message || 'Failed to create account', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Account Details - FinanceTrack{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="mb-6">
+        <a href="/accounts" class="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Back to Accounts
+        </a>
+    </div>
+
+    <!-- Account Info Card -->
+    <div id="account-info" class="card p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 id="account-name" class="text-2xl font-bold text-gray-900 dark:text-white"></h1>
+                <p id="account-type" class="text-sm text-gray-500 capitalize"></p>
+            </div>
+            <p id="account-balance" class="text-3xl font-bold"></p>
+        </div>
+    </div>
+
+    <!-- Transactions -->
+    <div class="card overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Transactions</h2>
+        </div>
+        <div id="transactions-list">
+        </div>
+    </div>
+</div>
+
+<script>
+let accountId = window.location.pathname.split('/')[2];
+
+document.addEventListener('DOMContentLoaded', function() {
+    setPageTitle('Account Details');
+    loadAccount();
+});
+
+async function loadAccount() {
+    try {
+        const result = await api.get(`/accounts/${accountId}`);
+        const account = result.data;
+
+        document.getElementById('account-name').textContent = account.name;
+        document.getElementById('account-type').textContent = account.type.replace('_', ' ');
+        document.getElementById('account-balance').textContent = formatCurrency(account.balance);
+        document.getElementById('account-balance').className = `text-3xl font-bold ${account.balance >= 0 ? 'text-gray-900 dark:text-white' : 'text-danger'}`;
+
+        // Load recent transactions (expenses and income for this account)
+        loadTransactions();
+    } catch (e) {
+        showFlash('Failed to load account', 'error');
+        setTimeout(() => window.location.href = '/accounts', 1000);
+    }
+}
+
+async function loadTransactions() {
+    try {
+        const [expensesResult, incomeResult] = await Promise.all([
+            api.get('/expenses', { per_page: 10 }),
+            api.get('/income', { per_page: 10 }),
+        ]);
+
+        const expenses = expensesResult.data
+            .filter(e => e.account_id == accountId)
+            .map(e => ({ ...e, type: 'expense' }));
+
+        const incomes = incomeResult.data
+            .filter(i => i.account_id == accountId)
+            .map(i => ({ ...i, type: 'income' }));
+
+        const transactions = [...expenses, ...incomes]
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        const container = document.getElementById('transactions-list');
+
+        if (transactions.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-8">
+                    <p class="text-gray-500">No transactions yet</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = transactions.map(tx => `
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-surface-dark-hover">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center ${tx.type === 'expense' ? 'bg-red-100 dark:bg-red-900/20' : 'bg-green-100 dark:bg-green-900/20'}">
+                        ${tx.type === 'expense'
+                            ? '<svg class="w-4 h-4 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>'
+                            : '<svg class="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>'
+                        }
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">${escapeHtml(tx.merchant || tx.source || tx.category_name) || 'Transaction'}</p>
+                        <p class="text-xs text-gray-500">${formatDate(tx.date)} • ${escapeHtml(tx.payment_method)}</p>
+                    </div>
+                </div>
+                <span class="text-sm font-semibold ${tx.type === 'expense' ? 'text-danger' : 'text-success'}">
+                    ${tx.type === 'expense' ? '-' : '+'}${formatCurrency(tx.amount)}
+                </span>
+            </div>
+        `).join('');
+    } catch (e) {
+        console.error('Failed to load transactions:', e);
+    }
+}
+</script>
+{% endblock %}

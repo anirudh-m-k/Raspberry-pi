@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Join Event — FinanceTrack{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto py-12 space-y-6">
+  <div class="flex items-center gap-4">
+    <a href="/events" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+      <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    </a>
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Join Event</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Enter invite code to join</p>
+    </div>
+  </div>
+
+  <div class="card p-8 text-center space-y-6">
+    <div class="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mx-auto text-2xl">
+      🔑
+    </div>
+    
+    <div>
+      <h2 class="text-xl font-bold text-gray-900 dark:text-white">Enter Join Code</h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Enter the 6-character code shared by the event organizer.</p>
+    </div>
+    
+    <form id="joinForm" class="space-y-4">
+      <div>
+        <input id="code" type="text" required class="input-field text-center text-3xl font-mono font-bold uppercase tracking-widest py-3 border-2 border-indigo-200 dark:border-indigo-800 focus:border-indigo-600" placeholder="X8Y2Z9" maxlength="6" autofocus>
+      </div>
+
+      <button type="submit" id="btnJoin" class="w-full btn-primary py-3 text-base font-semibold">
+        Join Event
+      </button>
+    </form>
+    
+    <p class="text-xs text-gray-400">Don't have a code? Ask your trip organizer to generate one from their event dashboard.</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const codeInput = document.getElementById('code');
+  
+  codeInput.addEventListener('input', function() {
+    this.value = this.value.toUpperCase();
+  });
+  
+  document.getElementById('joinForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const code = codeInput.value.trim();
+    
+    if (code.length !== 6) {
+      showToast('Code must be exactly 6 characters', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('btnJoin');
+    btn.disabled = true;
+    btn.textContent = 'Joining...';
+    
+    try {
+      const res = await api.post('/events/join-by-code', { code });
+      const eventId = res.data ? res.data.id : null;
+      if (res.success && eventId) {
+        showToast(res.message || 'Successfully joined event!', 'success');
+        window.location.href = `/events/${eventId}`;
+      } else if (res.success && !eventId) {
+        showToast('Joined event! Redirecting...', 'success');
+        window.location.href = '/events';
+      } else {
+        showToast(res.error?.message || res.message || 'Invalid join code', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Join Event';
+      }
+    } catch(err) {
+      console.error('Join error:', err);
+      const errMsg = err?.error?.message || err?.message || 'Error joining event';
+      showToast(errMsg, 'error');
+      btn.disabled = false;
+      btn.textContent = 'Join Event';
+    }
+  });
+});
+</script>
+{% endblock %}

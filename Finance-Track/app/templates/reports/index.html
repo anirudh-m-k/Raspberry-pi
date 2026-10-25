@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - FinanceTrack{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Reports & Analytics</h1>
+            <p class="text-gray-600 dark:text-gray-400 text-sm">Detailed insights into your finances</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <select id="report-period" class="input-field text-sm w-auto" onchange="loadReports()">
+                <option value="weekly">This Week</option>
+                <option value="monthly" selected>This Month</option>
+                <option value="yearly">This Year</option>
+            </select>
+            <input type="date" id="pdf-date-from" class="input-field text-sm w-auto" title="PDF From Date">
+            <input type="date" id="pdf-date-to" class="input-field text-sm w-auto" title="PDF To Date">
+            <button onclick="exportReport('csv')" class="btn-secondary text-sm">
+                <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                CSV
+            </button>
+            <button onclick="exportPDF()" class="btn-primary text-sm">
+                <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="card p-4">
+            <p class="text-xs text-gray-500">Total Income</p>
+            <p id="report-income" class="text-xl font-bold text-success">-</p>
+        </div>
+        <div class="card p-4">
+            <p class="text-xs text-gray-500">Total Expenses</p>
+            <p id="report-expense" class="text-xl font-bold text-danger">-</p>
+        </div>
+        <div class="card p-4">
+            <p class="text-xs text-gray-500">Net Savings</p>
+            <p id="report-net" class="text-xl font-bold text-gray-900 dark:text-white">-</p>
+        </div>
+        <div class="card p-4">
+            <p class="text-xs text-gray-500">Savings Rate</p>
+            <p id="report-rate" class="text-xl font-bold text-primary-600">-</p>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid lg:grid-cols-2 gap-6">
+        <div class="card p-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Spending by Category</h3>
+            <div id="spending-chart" class="h-64"></div>
+        </div>
+
+        <div class="card p-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Spending Heatmap</h3>
+            <div id="heatmap-chart" class="h-64"></div>
+        </div>
+    </div>
+
+    <!-- Savings Trend -->
+    <div class="card p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Savings Trend (6 Months)</h3>
+        <div id="savings-chart" class="h-64"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    setPageTitle('Reports');
+    initDatePickers();
+    loadReports();
+});
+
+function initDatePickers() {
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    document.getElementById('pdf-date-from').value = firstDay.toISOString().split('T')[0];
+    document.getElementById('pdf-date-to').value = today.toISOString().split('T')[0];
+}
+
+async function loadReports() {
+    const period = document.getElementById('report-period').value;
+
+    try {
+        const [incomeExp, spending, savings, heatmap] = await Promise.all([
+            api.get('/reports/income-expense', { period }),
+            api.get('/reports/spending', { period }),
+            api.get('/reports/savings'),
+            api.get('/reports/heatmap'),
+        ]);
+
+        renderSummary(incomeExp.data);
+        renderSpendingChart(spending.data.breakdown);
+        renderHeatmap(heatmap.data);
+        renderSavingsChart(savings.data);
+    } catch (e) {
+        showFlash('Failed to load reports', 'error');
+    }
+}
+
+function renderSummary(data) {
+    document.getElementById('report-income').textContent = formatCurrency(data.income);
+    document.getElementById('report-expense').textContent = formatCurrency(data.expense);
+    document.getElementById('report-net').textContent = formatCurrency(data.net);
+    document.getElementById('report-net').className = `text-xl font-bold ${data.net >= 0 ? 'text-success' : 'text-danger'}`;
+    document.getElementById('report-rate').textContent = `${data.savings_rate}%`;
+}
+
+function renderSpendingChart(breakdown) {
+    document.getElementById('spending-chart').innerHTML = '';
+    if (!breakdown || breakdown.length === 0) return;
+
+    const options = {
+        series: breakdown.map(b => b.total),
+        chart: { type: 'donut', height: 256, background: 'transparent' },
+        labels: breakdown.map(b => b.category_name || 'Uncategorized'),
+        theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' },
+        colors: ['#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#06b6d4', '#6366f1'],
+        legend: { position: 'bottom' },
+        dataLabels: { enabled: false },
+    };
+    new ApexCharts(document.getElementById('spending-chart'), options).render();
+}
+
+function renderHeatmap(data) {
+    document.getElementById('heatmap-chart').innerHTML = '';
+    if (!data || data.length === 0) return;
+
+    const options = {
+        series: [{ name: 'Spending', data: data.map(d => ({ x: d.day, y: d.total })) }],
+        chart: { type: 'bar', height: 256, background: 'transparent' },
+        xaxis: { labels: { style: { colors: '#9ca3af' } } },
+        yaxis: { labels: { style: { colors: '#9ca3af' }, formatter: val => formatCurrency(val) } },
+        colors: ['#4263eb'],
+        plotOptions: { bar: { borderRadius: 4 } },
+        grid: { borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' },
+        theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' },
+    };
+    new ApexCharts(document.getElementById('heatmap-chart'), options).render();
+}
+
+function renderSavingsChart(data) {
+    document.getElementById('savings-chart').innerHTML = '';
+    if (!data || data.length === 0) return;
+
+    const options = {
+        series: [
+            { name: 'Income', data: data.map(d => d.income) },
+            { name: 'Expenses', data: data.map(d => d.expense) },
+            { name: 'Savings', data: data.map(d => d.savings) },
+        ],
+        chart: { type: 'line', height: 256, background: 'transparent', toolbar: { show: false } },
+        xaxis: { categories: data.map(d => d.month), labels: { style: { colors: '#9ca3af' } } },
+        yaxis: { labels: { style: { colors: '#9ca3af' }, formatter: val => formatCurrency(val) } },
+        colors: ['#22c55e', '#ef4444', '#4263eb'],
+        stroke: { curve: 'smooth', width: 2 },
+        grid: { borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' },
+        theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' },
+        legend: { position: 'top' },
+    };
+    new ApexCharts(document.getElementById('savings-chart'), options).render();
+}
+
+async function exportReport(format) {
+    const period = document.getElementById('report-period').value;
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/v1/reports/export?period=${period}&format=${format}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Export failed');
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `expenses_${period}_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showFlash('Report exported!', 'success');
+    } catch (e) {
+        showFlash('Failed to export report', 'error');
+    }
+}
+
+async function exportPDF() {
+    const dateFrom = document.getElementById('pdf-date-from').value;
+    const dateTo = document.getElementById('pdf-date-to').value;
+
+    if (!dateFrom || !dateTo) {
+        showFlash('Please select both from and to dates', 'error');
+        return;
+    }
+
+    if (dateFrom > dateTo) {
+        showFlash('From date must be before To date', 'error');
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/v1/reports/export-pdf?date_from=${dateFrom}&date_to=${dateTo}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('PDF export failed');
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `finance_report_${dateFrom}_to_${dateTo}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showFlash('PDF report downloaded!', 'success');
+    } catch (e) {
+        showFlash('Failed to export PDF report', 'error');
+    }
+}
+</script>
+{% endblock %}

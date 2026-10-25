@@ -1,0 +1,383 @@
+{% extends "base.html" %}
+
+{% block title %}Create Event — FinanceTrack{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+  <!-- Header -->
+  <div class="flex items-center gap-4">
+    <a href="/events" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+      <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    </a>
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Create New Event</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Plan a trip or group activity</p>
+    </div>
+  </div>
+
+  <!-- Step indicator -->
+  <div class="flex items-center gap-0">
+    {% for step, label in [(1,'Details'),(2,'Members'),(3,'Categories'),(4,'Review')] %}
+    <div class="flex items-center {% if not loop.last %}flex-1{% endif %}">
+      <div class="flex flex-col items-center">
+        <div id="step-indicator-{{ step }}" class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all {% if step == 1 %}bg-primary-600 text-white{% else %}bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400{% endif %}">{{ step }}</div>
+        <span class="text-xs mt-1 text-gray-500 dark:text-gray-400 hidden sm:block">{{ label }}</span>
+      </div>
+      {% if not loop.last %}
+      <div id="step-line-{{ step }}" class="flex-1 h-0.5 mx-2 {% if step < 1 %}bg-primary-600{% else %}bg-gray-200 dark:bg-gray-700{% endif %} transition-all"></div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="card p-6">
+    <!-- Step 1: Basic Details -->
+    <div id="step-1" class="step-panel space-y-5">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Event Details</h2>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Event Name *</label>
+        <input type="text" id="event-name" class="input-field" placeholder="e.g. Goa Trip 2026" required>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+        <textarea id="event-description" class="input-field" rows="2" placeholder="Optional description..."></textarea>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+          <input type="date" id="event-start-date" class="input-field">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+          <input type="date" id="event-end-date" class="input-field">
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Currency</label>
+          <select id="event-currency" class="input-field">
+            <option value="INR">INR — Indian Rupee (₹)</option>
+            <option value="USD">USD — US Dollar ($)</option>
+            <option value="EUR">EUR — Euro (€)</option>
+            <option value="GBP">GBP — British Pound (£)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total Budget</label>
+          <input type="number" id="event-budget" class="input-field" placeholder="Optional..." min="0" step="0.01">
+        </div>
+      </div>
+      <div class="p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-xl flex items-center gap-3">
+        <input type="checkbox" id="generate-join-code" class="w-4 h-4 text-primary-600 rounded cursor-pointer" checked>
+        <div>
+          <label for="generate-join-code" class="text-sm font-medium text-gray-900 dark:text-white cursor-pointer">Generate Join Code automatically</label>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Allows other registered users to join this event via a 6-character code.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Members -->
+    <div id="step-2" class="step-panel hidden space-y-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Add Group Members</h2>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Members in your trip/group who will share expenses.</p>
+        </div>
+        <button type="button" onclick="addMemberRow()" class="btn-secondary text-sm flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Add Member
+        </button>
+      </div>
+      <div id="members-container" class="space-y-3"></div>
+    </div>
+
+    <!-- Step 3: Categories -->
+    <div id="step-3" class="step-panel hidden space-y-5">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Expense Categories</h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400">These default categories will be initialized for your event. You can also add custom ones.</p>
+      <div id="default-categories-list" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+      <div class="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Custom Categories</span>
+          <button type="button" onclick="addCustomCategoryRow()" class="btn-secondary text-xs flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Add Custom Category
+          </button>
+        </div>
+        <div id="custom-categories-container" class="space-y-2"></div>
+      </div>
+    </div>
+
+    <!-- Step 4: Review -->
+    <div id="step-4" class="step-panel hidden space-y-5">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Review &amp; Confirm</h2>
+      <div id="review-content" class="space-y-4"></div>
+    </div>
+
+    <!-- Navigation buttons -->
+    <div class="flex justify-between mt-8 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <button id="btn-prev" onclick="prevStep()" class="btn-secondary hidden">← Back</button>
+      <div class="flex-1"></div>
+      <button id="btn-next" onclick="nextStep()" class="btn-primary">Next →</button>
+      <button id="btn-submit" onclick="submitEvent()" class="btn-primary hidden">
+        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        Create Event
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Success Join Code Modal -->
+<div id="success-modal" class="hidden fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 max-w-md w-full text-center space-y-5 shadow-2xl animate-fade-in">
+    <div class="w-16 h-16 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">✓</div>
+    <div>
+      <h3 class="text-xl font-bold text-gray-900 dark:text-white">Event Created Successfully!</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1" id="success-event-name"></p>
+    </div>
+    
+    <div id="join-code-box" class="p-4 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700/50 rounded-xl space-y-2">
+      <p class="text-xs font-medium text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">Event Join Code</p>
+      <div class="flex items-center justify-center gap-3">
+        <span id="created-join-code" class="font-mono text-3xl font-bold text-indigo-700 dark:text-indigo-300 tracking-widest"></span>
+        <button onclick="copyJoinCode()" class="p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-800/40 rounded-lg transition-colors" title="Copy Code">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+        </button>
+      </div>
+      <p class="text-xs text-gray-500 dark:text-gray-400">Share this code with friends so they can join!</p>
+    </div>
+
+    <button id="btn-goto-event" class="w-full btn-primary py-2.5">Go to Event Dashboard →</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const DEFAULT_CATEGORIES = [
+  { name: 'Accommodation', icon: 'home', color: '#8b5cf6' },
+  { name: 'Food & Dining', icon: 'utensils', color: '#f59e0b' },
+  { name: 'Transport', icon: 'car', color: '#3b82f6' },
+  { name: 'Activities', icon: 'zap', color: '#22c55e' },
+  { name: 'Shopping', icon: 'shopping-bag', color: '#ec4899' },
+  { name: 'Drinks & Nightlife', icon: 'wine', color: '#a855f7' },
+  { name: 'Fuel', icon: 'fuel', color: '#ef4444' },
+  { name: 'Medical', icon: 'heart-pulse', color: '#06b6d4' },
+  { name: 'Miscellaneous', icon: 'more-horizontal', color: '#94a3b8' },
+];
+
+let currentStep = 1;
+const TOTAL_STEPS = 4;
+let memberCount = 0;
+let customCatCount = 0;
+
+function updateStepUI() {
+  for (let i = 1; i <= TOTAL_STEPS; i++) {
+    const panel = document.getElementById(`step-${i}`);
+    const indicator = document.getElementById(`step-indicator-${i}`);
+    panel.classList.toggle('hidden', i !== currentStep);
+    if (i < currentStep) {
+      indicator.className = 'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold bg-primary-600 text-white';
+      indicator.innerHTML = '✓';
+    } else if (i === currentStep) {
+      indicator.className = 'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold bg-primary-600 text-white';
+      indicator.textContent = i;
+    } else {
+      indicator.className = 'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400';
+      indicator.textContent = i;
+    }
+    if (i < TOTAL_STEPS) {
+      const line = document.getElementById(`step-line-${i}`);
+      line.className = `flex-1 h-0.5 mx-2 ${i < currentStep ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'} transition-all`;
+    }
+  }
+  document.getElementById('btn-prev').classList.toggle('hidden', currentStep === 1);
+  document.getElementById('btn-next').classList.toggle('hidden', currentStep === TOTAL_STEPS);
+  document.getElementById('btn-submit').classList.toggle('hidden', currentStep !== TOTAL_STEPS);
+
+  if (currentStep === 3) renderDefaultCategories();
+  if (currentStep === 4) renderReview();
+}
+
+function nextStep() {
+  if (currentStep === 1) {
+    const name = document.getElementById('event-name').value.trim();
+    if (!name) { showToast('Event name is required', 'error'); return; }
+  }
+  if (currentStep < TOTAL_STEPS) {
+    currentStep++;
+    updateStepUI();
+  }
+}
+
+function prevStep() {
+  if (currentStep > 1) { currentStep--; updateStepUI(); }
+}
+
+function addMemberRow(name = '', color = '#6366f1', isOrganizer = false) {
+  memberCount++;
+  const id = memberCount;
+  const colors = ['#ef4444','#f59e0b','#22c55e','#3b82f6','#8b5cf6','#ec4899','#06b6d4','#a855f7'];
+  const defaultColor = colors[(id - 1) % colors.length];
+  const row = document.createElement('div');
+  row.id = `member-row-${id}`;
+  row.className = 'flex flex-col sm:flex-row sm:items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-700';
+  row.innerHTML = `
+    <div class="flex items-center gap-3 flex-1 min-w-0">
+      <input type="color" value="${color || defaultColor}" class="w-8 h-8 rounded-lg cursor-pointer border-0 bg-transparent flex-shrink-0" id="member-color-${id}" title="Pick color">
+      <input type="text" placeholder="Member name (e.g. Rahul)" value="${name}" class="input-field text-sm flex-1" id="member-name-${id}" required>
+    </div>
+    <div class="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-200 dark:border-gray-600">
+      <label class="flex items-center gap-1.5 text-xs text-gray-700 dark:text-gray-300 font-medium cursor-pointer whitespace-nowrap">
+        <input type="checkbox" ${isOrganizer ? 'checked' : ''} id="member-organizer-${id}" class="w-4 h-4 text-primary-600 rounded">Organizer
+      </label>
+      <button type="button" onclick="document.getElementById('member-row-${id}').remove()" class="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Remove member">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+  `;
+  document.getElementById('members-container').appendChild(row);
+}
+
+function addCustomCategoryRow() {
+  customCatCount++;
+  const id = customCatCount;
+  const row = document.createElement('div');
+  row.id = `custom-cat-${id}`;
+  row.className = 'flex items-center gap-3';
+  row.innerHTML = `
+    <input type="color" value="#6366f1" class="w-8 h-8 rounded-lg cursor-pointer border-0 bg-transparent" id="custom-cat-color-${id}">
+    <input type="text" placeholder="Category name (e.g. Scuba Diving)" class="input-field flex-1 text-sm" id="custom-cat-name-${id}">
+    <button type="button" onclick="document.getElementById('custom-cat-${id}').remove()" class="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+  `;
+  document.getElementById('custom-categories-container').appendChild(row);
+}
+
+function renderDefaultCategories() {
+  const container = document.getElementById('default-categories-list');
+  if (container.children.length) return;
+  container.innerHTML = DEFAULT_CATEGORIES.map(c => `
+    <label class="flex items-center gap-2 p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+      <input type="checkbox" checked class="default-cat-check w-4 h-4 text-primary-600 rounded" data-name="${c.name}" data-icon="${c.icon}" data-color="${c.color}">
+      <span class="w-3 h-3 rounded-full flex-shrink-0" style="background:${c.color}"></span>
+      <span class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">${c.name}</span>
+    </label>
+  `).join('');
+}
+
+function renderReview() {
+  const name = document.getElementById('event-name').value.trim();
+  const desc = document.getElementById('event-description').value.trim();
+  const start = document.getElementById('event-start-date').value;
+  const end = document.getElementById('event-end-date').value;
+  const currency = document.getElementById('event-currency').value;
+  const budget = document.getElementById('event-budget').value;
+  const joinCode = document.getElementById('generate-join-code').checked;
+
+  const members = getMembersData();
+  const content = document.getElementById('review-content');
+  content.innerHTML = `
+    <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl space-y-2 border border-gray-200 dark:border-gray-700">
+      <h3 class="font-bold text-gray-900 dark:text-white text-lg">${name}</h3>
+      ${desc ? `<p class="text-sm text-gray-500 dark:text-gray-400">${desc}</p>` : ''}
+      <div class="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-300 pt-1">
+        ${start ? `<span>📅 ${start}${end ? ` – ${end}` : ''}</span>` : ''}
+        <span>💱 ${currency}</span>
+        ${budget ? `<span>💰 Budget: ₹${Number(budget).toLocaleString('en-IN')}</span>` : ''}
+        ${joinCode ? `<span class="text-indigo-600 dark:text-indigo-400 font-medium">🔑 Join code will be generated</span>` : ''}
+      </div>
+    </div>
+    <div>
+      <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Members (${members.length})</p>
+      <div class="flex flex-wrap gap-2">
+        ${members.map(m => `<span class="px-3 py-1 rounded-full text-xs font-semibold" style="background:${m.color}20;color:${m.color}">${m.name}${m.is_organizer ? ' (Organizer)' : ''}</span>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function getMembersData() {
+  const members = [];
+  document.querySelectorAll('[id^="member-row-"]').forEach(row => {
+    const id = row.id.replace('member-row-', '');
+    const name = document.getElementById(`member-name-${id}`)?.value?.trim();
+    if (name) {
+      members.push({
+        name,
+        color: document.getElementById(`member-color-${id}`)?.value || '#6366f1',
+        is_organizer: document.getElementById(`member-organizer-${id}`)?.checked || false,
+      });
+    }
+  });
+  return members;
+}
+
+function getCustomCategoriesData() {
+  const cats = [];
+  document.querySelectorAll('[id^="custom-cat-"]').forEach(row => {
+    const id = row.id.replace('custom-cat-', '');
+    const name = document.getElementById(`custom-cat-name-${id}`)?.value?.trim();
+    if (name) {
+      cats.push({ name, color: document.getElementById(`custom-cat-color-${id}`)?.value || '#6366f1' });
+    }
+  });
+  return cats;
+}
+
+async function submitEvent() {
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.textContent = 'Creating...';
+
+  const payload = {
+    name: document.getElementById('event-name').value.trim(),
+    description: document.getElementById('event-description').value.trim() || null,
+    start_date: document.getElementById('event-start-date').value || null,
+    end_date: document.getElementById('event-end-date').value || null,
+    currency: document.getElementById('event-currency').value,
+    budget: document.getElementById('event-budget').value ? parseFloat(document.getElementById('event-budget').value) : null,
+    generate_join_code: document.getElementById('generate-join-code').checked,
+    members: getMembersData(),
+    custom_categories: getCustomCategoriesData(),
+  };
+
+  try {
+    const res = await api.post('/events', payload);
+    if (res.success) {
+      const eventId = res.data.id;
+      const joinCode = res.data.join_code;
+      
+      if (joinCode) {
+        document.getElementById('success-event-name').textContent = res.data.name;
+        document.getElementById('created-join-code').textContent = joinCode;
+        document.getElementById('btn-goto-event').onclick = () => window.location.href = `/events/${eventId}`;
+        document.getElementById('success-modal').classList.remove('hidden');
+      } else {
+        showToast('Event created successfully!', 'success');
+        setTimeout(() => window.location.href = `/events/${eventId}`, 400);
+      }
+    } else {
+      showToast(res.error?.message || 'Failed to create event', 'error');
+      btn.disabled = false;
+      btn.textContent = 'Create Event';
+    }
+  } catch (e) {
+    showToast('Something went wrong', 'error');
+    btn.disabled = false;
+    btn.textContent = 'Create Event';
+  }
+}
+
+function copyJoinCode() {
+  const code = document.getElementById('created-join-code').textContent;
+  navigator.clipboard.writeText(code).then(() => showToast('Join code copied!', 'success'));
+}
+
+// Initialize with two member rows default (Self/Organizer + Participant)
+addMemberRow('Me', '#6366f1', true);
+addMemberRow('', '#f59e0b', false);
+updateStepUI();
+</script>
+{% endblock %}

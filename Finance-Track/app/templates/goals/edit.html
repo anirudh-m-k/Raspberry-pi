@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Goal - FinanceTrack{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+        <a href="/goals" class="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Back to Goals
+        </a>
+    </div>
+
+    <div class="card p-6 sm:p-8">
+        <h1 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Edit Goal</h1>
+
+        <form onsubmit="handleSubmit(event)" class="space-y-5">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Goal Title *</label>
+                <input type="text" name="title" required class="input-field">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Target Amount *</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                        <input type="number" name="target_amount" step="0.01" min="0.01" required class="input-field pl-8 text-lg font-semibold">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Deadline</label>
+                    <input type="date" name="deadline" class="input-field">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Priority</label>
+                <select name="priority" class="input-field">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Description</label>
+                <textarea name="description" rows="3" class="input-field"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <a href="/goals" class="btn-secondary">Cancel</a>
+                <button type="submit" class="btn-primary">
+                    <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Update Goal
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let goalId = window.location.pathname.split('/')[2];
+
+document.addEventListener('DOMContentLoaded', async function() {
+    setPageTitle('Edit Goal');
+    await loadGoal();
+});
+
+async function loadGoal() {
+    try {
+        const result = await api.get(`/goals/${goalId}`);
+        const goal = result.data;
+        const form = document.querySelector('form');
+        form.title.value = goal.title;
+        form.target_amount.value = goal.target_amount;
+        form.priority.value = goal.priority;
+        form.description.value = goal.description || '';
+        if (goal.deadline) form.deadline.value = goal.deadline;
+    } catch (e) {
+        showFlash('Failed to load goal', 'error');
+        setTimeout(() => window.location.href = '/goals', 1000);
+    }
+}
+
+async function handleSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    try {
+        await api.put(`/goals/${goalId}`, {
+            title: form.title.value.trim(),
+            target_amount: parseFloat(form.target_amount.value),
+            deadline: form.deadline.value || null,
+            priority: form.priority.value,
+            description: form.description.value || null,
+        });
+        showFlash('Goal updated!', 'success');
+        setTimeout(() => window.location.href = '/goals', 500);
+    } catch (error) {
+        showFlash(error.error?.message || 'Failed to update', 'error');
+    }
+}
+</script>
+{% endblock %}

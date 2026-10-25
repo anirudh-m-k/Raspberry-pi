@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin - FinanceTrack{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/app.css">
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme') || 'dark';
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
+</head>
+<body class="bg-gray-50 dark:bg-surface-dark text-gray-900 dark:text-gray-100 font-sans antialiased">
+    <!-- Admin Sidebar -->
+    <aside class="fixed left-0 top-0 z-40 w-64 h-screen transition-transform lg:translate-x-0 -translate-x-full">
+        <div class="h-full px-3 py-4 overflow-y-auto bg-white dark:bg-surface-dark-card border-r border-gray-200 dark:border-gray-700">
+            <div class="flex items-center gap-3 mb-8 px-2">
+                <div class="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                </div>
+                <span class="text-xl font-bold text-gray-900 dark:text-white">Admin Panel</span>
+            </div>
+
+            <nav class="space-y-1">
+                <a href="/admin" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-surface-dark-hover">
+                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    Dashboard
+                </a>
+                <a href="/admin/users" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-surface-dark-hover">
+                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    Users
+                </a>
+                <a href="/admin/audit" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-surface-dark-hover">
+                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                    Audit Logs
+                </a>
+                <div class="border-t border-gray-200 dark:border-gray-700 my-2"></div>
+                <a href="/dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-surface-dark-hover">
+                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                    Back to App
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="lg:ml-64">
+        <!-- Topbar -->
+        <header class="sticky top-0 z-30 bg-white dark:bg-surface-dark-card border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+            <div class="flex items-center justify-between">
+                <button onclick="document.querySelector('aside').classList.toggle('-translate-x-full')" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-surface-dark-hover">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                <div class="flex items-center gap-3">
+                    <span class="text-sm text-gray-600 dark:text-gray-400" id="admin-name"></span>
+                    <button onclick="adminLogout()" class="text-sm text-danger hover:underline">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="p-4 lg:p-6">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    {% include 'components/flash_messages.html' %}
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/api.js"></script>
+    <script>
+        // Admin auth check
+        (function() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user.role !== 'admin') {
+                showFlash('Access denied. Admin privileges required.', 'error');
+                window.location.href = '/dashboard';
+                return;
+            }
+            const nameEl = document.getElementById('admin-name');
+            if (nameEl) nameEl.textContent = user.name || 'Admin';
+        })();
+
+        function adminLogout() {
+            api.post('/auth/logout').finally(() => {
+                api.clearToken();
+                window.location.href = '/login';
+            });
+        }
+
+        function formatDateTime(isoStr) {
+            if (!isoStr) return '-';
+            const d = new Date(isoStr);
+            return d.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        function debounce(fn, delay) {
+            let timer;
+            return function(...args) {
+                clearTimeout(timer);
+                timer = setTimeout(() => fn.apply(this, args), delay);
+            };
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

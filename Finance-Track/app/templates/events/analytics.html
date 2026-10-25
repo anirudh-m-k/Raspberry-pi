@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-6 flex justify-between items-center">
+    <div class="flex items-center space-x-4">
+        <a href="/events/{{ event_id }}" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        </a>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Analytics</h1>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="card">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Category Breakdown</h2>
+        <div id="categoryPieChart" class="h-64"></div>
+    </div>
+    <div class="card">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Budget Burn Rate</h2>
+        <div class="mt-4">
+            <div class="flex justify-between mb-1">
+                <span id="budgetSpent" class="text-sm font-medium text-blue-700 dark:text-white">Spent: $0</span>
+                <span id="budgetTotal" class="text-sm font-medium text-gray-700 dark:text-gray-300">Total: $0</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-4 dark:bg-gray-700">
+                <div id="budgetBar" class="bg-blue-600 h-4 rounded-full" style="width: 0%"></div>
+            </div>
+            <p id="budgetProjection" class="text-xs text-gray-500 mt-2">Projection: N/A</p>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-6">
+    <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Daily Spending Trend</h2>
+    <div id="dailyLineChart" class="h-72"></div>
+</div>
+
+<div class="card">
+    <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Member Contributions</h2>
+    <div id="memberBarChart" class="h-72"></div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.1/dist/apexcharts.min.js"></script>
+<script>
+    const EVENT_ID = {{ event_id }};
+    const isDark = document.documentElement.classList.contains('dark');
+    const chartConfig = {
+        theme: { mode: isDark ? 'dark' : 'light' },
+        background: 'transparent'
+    };
+
+    async function init() {
+        try {
+            const res = await api.get(`/events/${EVENT_ID}/dashboard`);
+            const data = res.data || res;
+            
+            // Category Pie
+            if(data.category_breakdown && data.category_breakdown.length > 0) {
+                new ApexCharts(document.querySelector("#categoryPieChart"), {
+                    ...chartConfig,
+                    series: data.category_breakdown.map(d => parseFloat(d.amount)),
+                    labels: data.category_breakdown.map(d => d.name),
+                    chart: { type: 'pie', height: 250, background: 'transparent' },
+                    colors: data.category_breakdown.map(d => d.color || '#3b82f6')
+                }).render();
+            } else {
+                document.querySelector("#categoryPieChart").innerHTML = '<p class="text-gray-500">No data</p>';
+            }
+            
+            // Daily Line
+            if(data.daily_spending && data.daily_spending.length > 0) {
+                new ApexCharts(document.querySelector("#dailyLineChart"), {
+                    ...chartConfig,
+                    series: [{ name: 'Spent', data: data.daily_spending.map(d => parseFloat(d.amount)) }],
+                    chart: { type: 'area', height: 280, toolbar: { show: false }, background: 'transparent' },
+                    xaxis: { categories: data.daily_spending.map(d => d.date) },
+                    colors: ['#8b5cf6'],
+                    fill: { type: 'gradient' }
+                }).render();
+            }
+            
+            // Member Bar
+            if(data.member_contributions && data.member_contributions.length > 0) {
+                new ApexCharts(document.querySelector("#memberBarChart"), {
+                    ...chartConfig,
+                    series: [{ name: 'Paid', data: data.member_contributions.map(d => parseFloat(d.total_paid)) }],
+                    chart: { type: 'bar', height: 280, background: 'transparent' },
+                    xaxis: { categories: data.member_contributions.map(d => d.name) },
+                    colors: ['#10b981']
+                }).render();
+            }
+            
+            // Budget
+            if(data.budget) {
+                const pct = Math.min((data.budget.spent / data.budget.total) * 100, 100) || 0;
+                document.getElementById('budgetBar').style.width = pct + '%';
+                document.getElementById('budgetSpent').textContent = `Spent: ${data.budget.spent}`;
+                document.getElementById('budgetTotal').textContent = `Total: ${data.budget.total}`;
+                if(pct > 90) document.getElementById('budgetBar').classList.replace('bg-blue-600', 'bg-red-600');
+            }
+            
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+</script>
+{% endblock %}

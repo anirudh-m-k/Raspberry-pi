@@ -1,0 +1,105 @@
+{% extends "base_public.html" %}
+
+{% block title %}Terms of Service - FinanceTrack{% endblock %}
+
+{% block content %}
+<div class="min-h-screen">
+    <!-- Nav -->
+    <nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-surface-dark/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <a href="/" class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <span class="text-xl font-bold text-gray-900 dark:text-white">FinanceTrack</span>
+                </a>
+                <a href="/login" class="text-sm text-primary-600 hover:text-primary-700 font-medium">Sign In</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="pt-24 pb-16 px-4">
+        <div class="max-w-3xl mx-auto">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Terms of Service</h1>
+            <p class="text-sm text-gray-500 mb-8">Last updated: May 2026</p>
+
+            <div class="prose prose-gray dark:prose-invert max-w-none space-y-6 text-gray-700 dark:text-gray-300">
+                <section>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">1. Acceptance of Terms</h2>
+                    <p>By creating an account and using FinanceTrack, you agree to these Terms of Service. If you do not agree, please do not use the application.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">2. Description of Service</h2>
+                    <p>FinanceTrack is a personal finance management application that allows you to:</p>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li>Track expenses and income</li>
+                        <li>Set and monitor budgets</li>
+                        <li>Create and track financial goals</li>
+                        <li>Manage savings pots</li>
+                        <li>View reports and analytics</li>
+                        <li>Manage recurring transactions</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">3. User Responsibilities</h2>
+                    <p>You are responsible for:</p>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li>Maintaining the confidentiality of your account credentials.</li>
+                        <li>All activities that occur under your account.</li>
+                        <li>The accuracy of financial data you enter.</li>
+                        <li>Keeping your password secure and not sharing it.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">4. Data Ownership</h2>
+                    <p><strong>You own all data you enter into FinanceTrack.</strong> We do not claim any ownership over your financial data. You can export or delete your data at any time.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">5. Acceptable Use</h2>
+                    <p>You agree not to:</p>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li>Use the service for any illegal purpose.</li>
+                        <li>Attempt to access other users' data.</li>
+                        <li>Attempt to hack, disrupt, or overload the service.</li>
+                        <li>Use automated tools to access the service without permission.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">6. Service Availability</h2>
+                    <p>We strive to keep FinanceTrack available at all times, but we do not guarantee uninterrupted access. The service may be temporarily unavailable for maintenance or updates.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">7. Limitation of Liability</h2>
+                    <p>FinanceTrack is provided "as is" without warranties. We are not responsible for any financial decisions made based on the data or insights provided by the application. Always consult a qualified financial advisor for important financial decisions.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">8. Account Termination</h2>
+                    <p>You may delete your account at any time from the Settings page. Upon deletion, all your data is permanently removed. We reserve the right to suspend accounts that violate these terms.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">9. Changes to Terms</h2>
+                    <p>We may update these terms from time to time. Continued use of the service after changes constitutes acceptance of the new terms.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">10. Contact</h2>
+                    <p>For questions about these Terms, contact us at <a href="mailto:support@financetrack.com" class="text-primary-600 hover:text-primary-700">support@financetrack.com</a></p>
+                </section>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <a href="/register" class="text-primary-600 hover:text-primary-700 font-medium">&larr; Back to Registration</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

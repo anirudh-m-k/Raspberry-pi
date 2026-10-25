@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - FinanceTrack{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+        <p class="text-gray-600 dark:text-gray-400 text-sm">Your financial snapshot at a glance</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="card p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-10 h-10 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                    </svg>
+                </div>
+                <button data-eye-id="dash_balance" onclick="toggleCardVisibility(this)" class="eye-btn p-1 rounded hover:bg-gray-100 dark:hover:bg-surface-dark-hover" title="Toggle visibility">
+                    <svg class="eye-open w-4 h-4 text-gray-400 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    <svg class="eye-closed w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Total Balance</p>
+            <p id="total-balance" class="text-lg font-bold text-gray-900 dark:text-white">••••••</p>
+        </div>
+
+        <div class="card p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-10 h-10 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                    </svg>
+                </div>
+                <button data-eye-id="dash_expenses" onclick="toggleCardVisibility(this)" class="eye-btn p-1 rounded hover:bg-gray-100 dark:hover:bg-surface-dark-hover" title="Toggle visibility">
+                    <svg class="eye-open w-4 h-4 text-gray-400 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    <svg class="eye-closed w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Monthly Expenses</p>
+            <p id="monthly-expenses" class="text-lg font-bold text-gray-900 dark:text-white">••••••</p>
+        </div>
+
+        <div class="card p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                    </svg>
+                </div>
+                <button data-eye-id="dash_income" onclick="toggleCardVisibility(this)" class="eye-btn p-1 rounded hover:bg-gray-100 dark:hover:bg-surface-dark-hover" title="Toggle visibility">
+                    <svg class="eye-open w-4 h-4 text-gray-400 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    <svg class="eye-closed w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Monthly Income</p>
+            <p id="monthly-income" class="text-lg font-bold text-gray-900 dark:text-white">••••••</p>
+        </div>
+
+        <div class="card p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                </div>
+                <button data-eye-id="dash_savings" onclick="toggleCardVisibility(this)" class="eye-btn p-1 rounded hover:bg-gray-100 dark:hover:bg-surface-dark-hover" title="Toggle visibility">
+                    <svg class="eye-open w-4 h-4 text-gray-400 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    <svg class="eye-closed w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Savings Rate</p>
+            <p id="savings-rate" class="text-lg font-bold text-gray-900 dark:text-white">••••••</p>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="flex flex-wrap gap-3">
+        <a href="/expenses/add" class="btn-primary text-sm">
+            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Add Expense
+        </a>
+        <a href="/income/add" class="btn-secondary text-sm">
+            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Add Income
+        </a>
+        <a href="/goals/add" class="btn-secondary text-sm">
+            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Add Goal
+        </a>
+        <a href="/budgets/add" class="btn-secondary text-sm">
+            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Add Budget
+        </a>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid lg:grid-cols-2 gap-6">
+        <!-- Expense by Category -->
+        <div class="card p-6 flex flex-col">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Expenses by Category</h3>
+            <div id="expense-category-chart" class="h-64"></div>
+            <div id="expense-category-list" class="mt-4 space-y-2"></div>
+        </div>
+
+        <!-- Weekly Trend -->
+        <div class="card p-6 flex flex-col">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Weekly Spending Trend</h3>
+            <div id="weekly-trend-chart" class="flex-1 min-h-0 overflow-hidden"></div>
+        </div>
+    </div>
+
+    <!-- Monthly Comparison -->
+    <div class="card p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Monthly Income vs Expenses</h3>
+        <div id="monthly-comparison-chart" class="h-64"></div>
+    </div>
+
+    <!-- Insights -->
+    <div class="card p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Smart Insights</h3>
+        <div id="insights-list" class="space-y-3">
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+let summaryData = null;
+let chartsData = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Reset dashboard visibility preferences so amounts default to hidden (••••••) on page load
+    Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('eye_dash_')) {
+            localStorage.removeItem(key);
+        }
+    });
+    setPageTitle('Dashboard');
+    loadDashboard();
+});
+
+async function loadDashboard() {
+    try {
+        const [summaryResult, chartsResult, insightsResult] = await Promise.all([
+            api.get('/dashboard/summary'),
+            api.get('/dashboard/charts'),
+            api.get('/dashboard/insights'),
+        ]);
+
+        summaryData = summaryResult.data;
+        chartsData = chartsResult.data;
+
+        renderSummary();
+        renderCharts();
+        renderInsights(insightsResult.data);
+    } catch (e) {
+        console.error('Failed to load dashboard:', e);
+        showFlash('Failed to load dashboard', 'error');
+    }
+}
+
+function renderSummary() {
+    const items = [
+        { id: 'total-balance', eyeId: 'dash_balance', val: formatCurrency(summaryData.total_balance) },
+        { id: 'monthly-expenses', eyeId: 'dash_expenses', val: formatCurrency(summaryData.monthly_expenses) },
+        { id: 'monthly-income', eyeId: 'dash_income', val: formatCurrency(summaryData.monthly_income) },
+        { id: 'savings-rate', eyeId: 'dash_savings', val: `${summaryData.savings_rate}%` },
+    ];
+
+    items.forEach(item => {
+        const el = document.getElementById(item.id);
+        if (el) {
+            el.dataset.original = item.val;
+            const btn = document.querySelector(`button[data-eye-id="${item.eyeId}"]`);
+            const isHidden = btn ? isEyeHidden(btn) : true;
+            el.textContent = isHidden ? '••••••' : item.val;
+            if (btn) {
+                const openIcon = btn.querySelector('.eye-open');
+                const closedIcon = btn.querySelector('.eye-closed');
+                if (openIcon) openIcon.classList.toggle('hidden', isHidden);
+                if (closedIcon) closedIcon.classList.toggle('hidden', !isHidden);
+            }
+        }
+    });
+}
+
+function renderCharts() {
+    // Expense by Category Pie Chart
+    if (chartsData.expense_by_category.length > 0) {
+        const colors = ['#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#06b6d4', '#6366f1'];
+        const expenseOptions = {
+            series: chartsData.expense_by_category.map(e => e.total),
+            chart: { type: 'donut', height: 256, background: 'transparent' },
+            labels: chartsData.expense_by_category.map(e => e.category_name || 'Uncategorized'),
+            theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' },
+            colors: colors,
+            legend: { position: 'bottom', labels: { colors: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' } },
+            dataLabels: { enabled: false },
+            plotOptions: { pie: { donut: { size: '65%' } } },
+        };
+        new ApexCharts(document.getElementById('expense-category-chart'), expenseOptions).render();
+
+        // Category amounts list — sort by amount descending
+        const sorted = [...chartsData.expense_by_category].sort((a, b) => b.total - a.total);
+        const total = sorted.reduce((sum, e) => sum + e.total, 0);
+        const listHtml = sorted.map((e, i) => {
+            const pct = total > 0 ? ((e.total / total) * 100).toFixed(1) : 0;
+            const color = colors[i % colors.length];
+            return `
+                <div class="grid items-center text-sm" style="grid-template-columns: 1fr 60px 110px; gap: 12px;">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="w-3 h-3 rounded-full flex-shrink-0" style="background:${color}"></span>
+                        <span class="text-gray-700 dark:text-gray-300 truncate">${escapeHtml(e.category_name)}</span>
+                    </div>
+                    <span class="text-gray-500 text-xs text-right">${pct}%</span>
+                    <span class="font-medium text-gray-900 dark:text-white text-right">${formatCurrency(e.total)}</span>
+                </div>
+            `;
+        }).join('');
+        document.getElementById('expense-category-list').innerHTML = listHtml;
+    } else {
+        document.getElementById('expense-category-list').innerHTML = '<p class="text-center text-gray-500 text-sm py-4">No expenses this month</p>';
+    }
+
+    // Weekly Trend Line Chart
+    if (chartsData.weekly_trend.length > 0) {
+        const weeklyOptions = {
+            series: [{ name: 'Expenses', data: chartsData.weekly_trend.map(d => d.amount) }],
+            chart: { type: 'area', height: '100%', background: 'transparent', toolbar: { show: false } },
+            xaxis: { categories: chartsData.weekly_trend.map(d => formatDate(d.date, 'short')), labels: { style: { colors: '#9ca3af' } } },
+            yaxis: { labels: { style: { colors: '#9ca3af' }, formatter: val => formatCurrency(val) } },
+            colors: ['#4263eb'],
+            fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.3 } },
+            stroke: { curve: 'smooth', width: 2 },
+            grid: { borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' },
+            theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' },
+        };
+        new ApexCharts(document.getElementById('weekly-trend-chart'), weeklyOptions).render();
+    }
+
+    // Monthly Comparison Bar Chart
+    if (chartsData.monthly_comparison.length > 0) {
+        const monthlyOptions = {
+            series: [
+                { name: 'Income', data: chartsData.monthly_comparison.map(d => d.income) },
+                { name: 'Expenses', data: chartsData.monthly_comparison.map(d => d.expenses) },
+            ],
+            chart: { type: 'bar', height: 256, background: 'transparent', toolbar: { show: false } },
+            xaxis: { categories: chartsData.monthly_comparison.map(d => d.month), labels: { style: { colors: '#9ca3af' } } },
+            yaxis: { labels: { style: { colors: '#9ca3af' }, formatter: val => formatCurrency(val) } },
+            colors: ['#22c55e', '#ef4444'],
+            plotOptions: { bar: { borderRadius: 4, columnWidth: '60%' } },
+            grid: { borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' },
+            theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' },
+            legend: { position: 'top', labels: { colors: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280' } },
+        };
+        new ApexCharts(document.getElementById('monthly-comparison-chart'), monthlyOptions).render();
+    }
+}
+
+function renderInsights(insights) {
+    const list = document.getElementById('insights-list');
+    if (insights.length === 0) {
+        list.innerHTML = '<p class="text-gray-500 text-sm">No insights yet. Add more transactions to get personalized insights.</p>';
+        return;
+    }
+
+    const icons = {
+        warning: '<svg class="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>',
+        info: '<svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+        success: '<svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+    };
+
+    list.innerHTML = insights.map(i => `
+        <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-surface-dark">
+            ${icons[i.type] || icons.info}
+            <p class="text-sm text-gray-700 dark:text-gray-300">${i.message}</p>
+        </div>
+    `).join('');
+}
+</script>
+{% endblock %}

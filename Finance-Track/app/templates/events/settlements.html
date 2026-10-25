@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Settlements — FinanceTrack{% endblock %}
+
+{% block content %}
+<div class="space-y-6" data-event-id="{{ event_id }}">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="flex items-center gap-4">
+      <a href="/events/{{ event_id }}" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      </a>
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Settlements</h1>
+        <p id="event-name-sub" class="text-sm text-gray-500 dark:text-gray-400">Loading...</p>
+      </div>
+    </div>
+    <button id="calcSettlementsBtn" onclick="calculateSettlements()" class="btn-primary text-sm flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+      Calculate Settlements
+    </button>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Member Balances -->
+    <div class="card p-6 flex flex-col space-y-4 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <div>
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white">Net Balances</h2>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Paid vs Owed per member</p>
+      </div>
+      <div id="balancesContainer" class="space-y-3 flex-1">
+        <p class="text-sm text-gray-400">Loading balances...</p>
+      </div>
+    </div>
+    
+    <!-- Pending Settlements -->
+    <div class="card overflow-hidden flex flex-col border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white">Suggested Payments</h2>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Minimum transactions required to settle up</p>
+      </div>
+      <div class="overflow-x-auto flex-1">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-gray-200 dark:border-gray-700 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/30">
+              <th class="px-5 py-3">Payer (Owes)</th>
+              <th class="px-5 py-3">Receiver (Gets)</th>
+              <th class="px-5 py-3">Amount</th>
+              <th class="px-5 py-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody id="pendingSettlements" class="divide-y divide-gray-100 dark:divide-gray-700/60">
+            <tr><td colspan="4" class="px-5 py-8 text-center text-gray-400 text-sm">No pending settlements. Click "Calculate Settlements" above.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Completed Settlements -->
+    <div class="card overflow-hidden col-span-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white">Settled History</h2>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Log of completed transactions</p>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-gray-200 dark:border-gray-700 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/30">
+              <th class="px-6 py-3">From</th>
+              <th class="px-6 py-3">To</th>
+              <th class="px-6 py-3">Amount</th>
+              <th class="px-6 py-3 text-right">Status</th>
+            </tr>
+          </thead>
+          <tbody id="completedSettlements" class="divide-y divide-gray-100 dark:divide-gray-700/60">
+            <tr><td colspan="4" class="px-6 py-6 text-center text-gray-400 text-sm">No completed settlements yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const EVENT_ID = {{ event_id }};
+let memberMap = {};
+
+async function init() {
+  const eventRes = await api.get(`/events/${EVENT_ID}`);
+  if (eventRes.success) {
+    document.getElementById('event-name-sub').textContent = eventRes.data.name;
+  }
+  
+  await loadMembers();
+  loadSettlements();
+  loadBalances();
+}
+
+async function loadMembers() {
+  const res = await api.get(`/events/${EVENT_ID}/members`);
+  const members = res.data || [];
+  members.forEach(m => memberMap[m.id] = m);
+}
+
+async function loadBalances() {
+  const res = await api.get(`/events/${EVENT_ID}/dashboard`);
+  if (!res.success) return;
+  
+  const container = document.getElementById('balancesContainer');
+  const members = res.data.member_spending || [];
+  
+  if (!members.length) {
+    container.innerHTML = '<p class="text-sm text-gray-400">No members</p>';
+    return;
+  }
+
+  container.innerHTML = members.map(m => {
+    const isCreditor = m.net > 0;
+    const isDebtor = m.net < 0;
+    const badgeColor = isCreditor 
+      ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700/50' 
+      : isDebtor 
+      ? 'text-red-700 bg-red-50 dark:bg-red-900/30 dark:text-red-300 border border-red-200 dark:border-red-700/50' 
+      : 'text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300';
+    const netLabel = isCreditor ? `Gets back ₹${m.net}` : isDebtor ? `Owes ₹${Math.abs(m.net)}` : 'Settled (₹0)';
+    
+    return `
+      <div class="p-3.5 bg-gray-50 dark:bg-gray-700/40 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <span class="w-3 h-3 rounded-full flex-shrink-0" style="background:${m.color || '#6366f1'}"></span>
+          <span class="text-sm font-bold text-gray-900 dark:text-white">${m.name}</span>
+        </div>
+        <span class="text-xs font-bold px-2.5 py-1 rounded-full ${badgeColor}">${netLabel}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+async function loadSettlements() {
+  const res = await api.get(`/events/${EVENT_ID}/settlements`);
+  const settlements = res.data || [];
+  
+  const pending = settlements.filter(s => !s.is_completed);
+  const completed = settlements.filter(s => s.is_completed);
+  
+  const pTable = document.getElementById('pendingSettlements');
+  const cTable = document.getElementById('completedSettlements');
+  
+  if (!pending.length) {
+    pTable.innerHTML = '<tr><td colspan="4" class="px-6 py-8 text-center text-gray-400 text-sm">No pending payments. Everything is balanced!</td></tr>';
+  } else {
+    pTable.innerHTML = pending.map(s => {
+      const fromName = s.from_member ? s.from_member.name : (memberMap[s.from_member_id]?.name || 'Member');
+      const toName = s.to_member ? s.to_member.name : (memberMap[s.to_member_id]?.name || 'Member');
+      return `
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+          <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">${fromName}</td>
+          <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">${toName}</td>
+          <td class="px-6 py-4 font-bold text-gray-900 dark:text-white">₹${Number(s.amount).toLocaleString('en-IN')}</td>
+          <td class="px-6 py-4 text-right">
+            <button onclick="markCompleted(${s.id})" class="btn-primary text-xs py-1.5 px-3">Mark Paid</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+  
+  if (!completed.length) {
+    cTable.innerHTML = '<tr><td colspan="4" class="px-6 py-6 text-center text-gray-400 text-sm">No completed settlements.</td></tr>';
+  } else {
+    cTable.innerHTML = completed.map(s => {
+      const fromName = s.from_member ? s.from_member.name : (memberMap[s.from_member_id]?.name || 'Member');
+      const toName = s.to_member ? s.to_member.name : (memberMap[s.to_member_id]?.name || 'Member');
+      return `
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+          <td class="px-6 py-3.5 text-gray-700 dark:text-gray-300">${fromName}</td>
+          <td class="px-6 py-3.5 text-gray-700 dark:text-gray-300">${toName}</td>
+          <td class="px-6 py-3.5 font-semibold text-gray-900 dark:text-white">₹${Number(s.amount).toLocaleString('en-IN')}</td>
+          <td class="px-6 py-3.5 text-right"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Completed</span></td>
+        </tr>
+      `;
+    }).join('');
+  }
+}
+
+async function calculateSettlements() {
+  const btn = document.getElementById('calcSettlementsBtn');
+  btn.disabled = true;
+  btn.textContent = 'Calculating...';
+  
+  try {
+    const res = await api.post(`/events/${EVENT_ID}/settlements/calculate`, {});
+    if (res.success) {
+      showToast(res.message || 'Settlements calculated!', 'success');
+      loadSettlements();
+      loadBalances();
+    } else {
+      showToast(res.error?.message || 'Calculation failed', 'error');
+    }
+  } catch (e) {
+    showToast('Calculation failed', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Calculate Settlements';
+  }
+}
+
+async function markCompleted(id) {
+  try {
+    const res = await api.put(`/events/${EVENT_ID}/settlements/${id}`, { is_completed: true });
+    if (res.success) {
+      showToast('Marked as completed', 'success');
+      loadSettlements();
+      loadBalances();
+    }
+  } catch (e) {
+    showToast('Failed to update settlement', 'error');
+  }
+}
+
+init();
+</script>
+{% endblock %}

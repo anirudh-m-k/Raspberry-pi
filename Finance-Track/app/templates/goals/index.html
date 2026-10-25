@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Goals - FinanceTrack{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Goals</h1>
+            <p class="text-gray-600 dark:text-gray-400 text-sm">Track your financial goals and milestones</p>
+        </div>
+        <a href="/goals/add" class="btn-primary">
+            <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Add Goal
+        </a>
+    </div>
+
+    <div id="goals-list" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    </div>
+
+    {% include 'components/empty_state.html' %}
+    {% include 'components/modal.html' %}
+</div>
+
+<script>
+let goalsData = [];
+
+let accountsList = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    setPageTitle('Goals');
+    loadAccounts();
+    loadGoals();
+});
+
+async function loadAccounts() {
+    try {
+        const result = await api.get('/accounts');
+        accountsList = result.data || [];
+    } catch (e) {
+        accountsList = [];
+    }
+}
+
+function getAccountOptions() {
+    return accountsList.map(a => `<option value="${a.id}">${a.name} (${formatCurrency(a.balance)})</option>`).join('');
+}
+
+async function loadGoals() {
+    try {
+        const result = await api.get('/goals');
+        goalsData = result.data;
+        renderGoals();
+
+        if (goalsData.length === 0) {
+            showEmptyState('No goals yet', 'Set financial goals and track your progress towards achieving them.', 'Create Goal', '/goals/add');
+        } else {
+            hideEmptyState();
+        }
+    } catch (e) {
+        showFlash('Failed to load goals', 'error');
+    }
+}
+
+function renderGoals() {
+    const list = document.getElementById('goals-list');
+    const priorityColors = { high: 'text-danger', medium: 'text-warning', low: 'text-success' };
+
+    list.innerHTML = goalsData.map(g => {
+        const progress = g.progress_percent || 0;
+        const color = g.is_completed ? 'bg-success' : progress >= 75 ? 'bg-primary-600' : progress >= 50 ? 'bg-info' : 'bg-warning';
+
+        // Calculate monthly required amount
+        let monthlyRequired = null;
+        if (!g.is_completed && g.deadline) {
+            const today = new Date();
+            const deadline = new Date(g.deadline);
+            const remaining = g.target_amount - g.current_amount;
+            if (remaining > 0 && deadline > today) {
+                const monthsLeft = (deadline - today) / (1000 * 60 * 60 * 24 * 30.44); // avg days/month
+                if (monthsLeft > 0) {
+                    monthlyRequired = remaining / monthsLeft;
+                }
+            }
+        }
+
+        return `
+            <div class="card-hover p-5">
+                <div class="flex items-start justify-between mb-3">
+                    <div>
+                        <h3 class="font-semibold text-gray-900 dark:text-white">${escapeHtml(g.title)}</h3>
+                        <span class="text-xs ${priorityColors[g.priority] || 'text-gray-500'} capitalize">${escapeHtml(g.priority)} priority</span>
+                    </div>
+                    ${g.is_completed ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400">Completed</span>' : ''}
+                </div>
+
+                <div class="mb-3">
+                    <div class="flex items-center justify-between text-sm mb-1">
+                        <span class="text-gray-600 dark:text-gray-400">${formatCurrency(g.current_amount)}</span>
+                        <span class="font-medium text-gray-900 dark:text-white">${formatCurrency(g.target_amount)}</span>
+                    </div>
+                    <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div class="h-3 rounded-full ${color} transition-all duration-300" style="width: ${Math.min(progress, 100)}%"></div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-sm">
+                    <span class="font-medium text-primary-600">${progress.toFixed(0)}% complete</span>
+                    ${g.deadline ? `<span class="text-gray-500">Due: ${formatDate(g.deadline)}</span>` : ''}
+                </div>
+
+                ${monthlyRequired ? `
+                <div class="mt-2 p-2 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                        </svg>
+                        <span class="text-xs text-blue-700 dark:text-blue-300">
+                            <strong>${formatCurrency(monthlyRequired)}</strong>/month needed to reach goal on time
+                        </span>
+                    </div>
+                </div>
+                ` : ''}
+
+                <div class="mt-4 flex items-center gap-2">
+                    ${!g.is_completed ? `
+                        <button onclick="showContributeModal(${g.id}, '${g.title}')" class="btn-primary text-xs py-1.5 px-3 flex-1">Contribute</button>
+                    ` : ''}
+                    <a href="/goals/${g.id}" class="btn-secondary text-xs py-1.5 px-3 flex-1 text-center">View</a>
+                    <a href="/goals/${g.id}/edit" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-surface-dark-hover" title="Edit">
+                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                    </a>
+                    <button onclick="deleteGoal(${g.id})" class="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/20" title="Delete">
+                        <svg class="w-4 h-4 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function showContributeModal(goalId, goalTitle) {
+    openModal(`Contribute to ${goalTitle}`, `
+        <form onsubmit="handleContribute(event, ${goalId})" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">From Account</label>
+                <select name="account_id" class="input-field">
+                    <option value="">Don't deduct from account</option>
+                    ${getAccountOptions()}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Amount</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                    <input type="number" name="amount" step="0.01" min="0.01" required placeholder="0.00" class="input-field pl-8">
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Notes (Optional)</label>
+                <input type="text" name="notes" placeholder="Add a note" class="input-field">
+            </div>
+            <div class="flex items-center justify-end gap-3">
+                <button type="button" onclick="closeModal()" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Contribute</button>
+            </div>
+        </form>
+    `);
+}
+
+async function handleContribute(e, goalId) {
+    e.preventDefault();
+    const form = e.target;
+
+    try {
+        const data = {
+            amount: parseFloat(form.amount.value),
+            notes: form.notes.value || null,
+        };
+        if (form.account_id.value) data.account_id = parseInt(form.account_id.value);
+        await api.post(`/goals/${goalId}/contribute`, data);
+        closeModal();
+        showFlash('Contribution added!', 'success');
+        loadGoals();
+    } catch (error) {
+        showFlash(error.error?.message || 'Failed to contribute', 'error');
+    }
+}
+
+async function deleteGoal(id) {
+    confirmAction('Are you sure you want to delete this goal?', async () => {
+        try {
+            await api.delete(`/goals/${id}`);
+            showFlash('Goal deleted', 'success');
+            loadGoals();
+        } catch (e) {
+            showFlash('Failed to delete goal', 'error');
+        }
+    });
+}
+</script>
+{% endblock %}

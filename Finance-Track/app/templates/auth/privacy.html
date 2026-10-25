@@ -1,0 +1,101 @@
+{% extends "base_public.html" %}
+
+{% block title %}Privacy Policy - FinanceTrack{% endblock %}
+
+{% block content %}
+<div class="min-h-screen">
+    <!-- Nav -->
+    <nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-surface-dark/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <a href="/" class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <span class="text-xl font-bold text-gray-900 dark:text-white">FinanceTrack</span>
+                </a>
+                <a href="/login" class="text-sm text-primary-600 hover:text-primary-700 font-medium">Sign In</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="pt-24 pb-16 px-4">
+        <div class="max-w-3xl mx-auto">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Privacy Policy</h1>
+            <p class="text-sm text-gray-500 mb-8">Last updated: May 2026</p>
+
+            <div class="prose prose-gray dark:prose-invert max-w-none space-y-6 text-gray-700 dark:text-gray-300">
+                <section>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">1. Information We Collect</h2>
+                    <p>FinanceTrack collects the following information to provide our services:</p>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li><strong>Account Information:</strong> Name, email address, and encrypted password when you register.</li>
+                        <li><strong>Financial Data:</strong> Expenses, income, budgets, goals, account balances, and transaction details that you enter.</li>
+                        <li><strong>Usage Data:</strong> Login timestamps, IP addresses, and device information for security purposes.</li>
+                        <li><strong>Preferences:</strong> Currency, timezone, theme, and notification settings.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">2. How We Use Your Data</h2>
+                    <p>Your data is used exclusively to:</p>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li>Provide and maintain the FinanceTrack service.</li>
+                        <li>Process your financial entries and generate reports.</li>
+                        <li>Send you notifications about budgets, goals, and recurring transactions.</li>
+                        <li>Ensure security and prevent unauthorized access.</li>
+                        <li>Improve application performance and user experience.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">3. Data Storage & Security</h2>
+                    <p>Your financial data is stored securely with the following protections:</p>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li>Passwords are hashed using bcrypt with salt.</li>
+                        <li>All API communications use JWT token authentication.</li>
+                        <li>Database backups are encrypted and stored separately.</li>
+                        <li>Access is restricted to authenticated users only.</li>
+                        <li>Sensitive operations are logged in an audit trail.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">4. Data Sharing</h2>
+                    <p><strong>We do not sell, trade, or share your personal or financial data with any third parties.</strong> Your data remains private and is only accessible to you.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">5. Data Retention</h2>
+                    <p>Your data is retained as long as your account is active. You may delete your account and all associated data at any time from the Settings page.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">6. Your Rights</h2>
+                    <p>You have the right to:</p>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li>Access all your stored data via the Export feature.</li>
+                        <li>Delete your account and all data permanently.</li>
+                        <li>Modify or correct your information at any time.</li>
+                        <li>Request a backup of your database.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">7. Cookies</h2>
+                    <p>FinanceTrack uses JWT tokens stored in your browser for authentication. No tracking cookies or third-party analytics are used.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">8. Contact</h2>
+                    <p>If you have questions about this Privacy Policy, please contact us at <a href="mailto:privacy@financetrack.com" class="text-primary-600 hover:text-primary-700">privacy@financetrack.com</a></p>
+                </section>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <a href="/register" class="text-primary-600 hover:text-primary-700 font-medium">&larr; Back to Registration</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

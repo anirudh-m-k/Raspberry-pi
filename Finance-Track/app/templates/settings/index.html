@@ -1,0 +1,557 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - FinanceTrack{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
+        <p class="text-gray-600 dark:text-gray-400 text-sm">Manage your preferences and account</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex items-center gap-2 border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
+        <button onclick="showTab('profile')"
+            class="tab-btn active px-4 py-2 text-sm font-medium border-b-2 border-primary-600 text-primary-600 whitespace-nowrap">Profile</button>
+        <button onclick="showTab('preferences')"
+            class="tab-btn px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 whitespace-nowrap">Preferences</button>
+        <button onclick="showTab('security')"
+            class="tab-btn px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 whitespace-nowrap">Security</button>
+        <button onclick="showTab('categories')"
+            class="tab-btn px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 whitespace-nowrap">Categories</button>
+        <button onclick="showTab('data')"
+            class="tab-btn px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 whitespace-nowrap">Data</button>
+    </div>
+
+    <!-- Profile Tab -->
+    <div id="tab-profile" class="card p-6 space-y-5">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Profile</h2>
+        <form onsubmit="updateProfile(event)" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Name</label>
+                    <input type="text" id="profile-name" class="input-field">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email</label>
+                    <input type="email" id="profile-email" class="input-field" disabled>
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">Save Changes</button>
+        </form>
+    </div>
+
+    <!-- Preferences Tab -->
+    <div id="tab-preferences" class="card p-6 space-y-5 hidden">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Preferences</h2>
+        <form onsubmit="updatePreferences(event)" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Currency</label>
+                    <select id="pref-currency" class="input-field">
+                        <option value="INR">INR (₹)</option>
+                        <option value="USD">USD ($)</option>
+                        <option value="EUR">EUR (€)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Theme</label>
+                    <select id="pref-theme" class="input-field" onchange="applyTheme(this.value)">
+                        <option value="dark">Dark</option>
+                        <option value="light">Light</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Date Format</label>
+                    <select id="pref-dateformat" class="input-field">
+                        <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                        <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                        <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Timezone</label>
+                    <select id="pref-timezone" class="input-field">
+                        <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
+                        <option value="America/New_York">America/New_York (EST)</option>
+                        <option value="Europe/London">Europe/London (GMT)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" id="pref-email-notif"
+                        class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-primary-600">
+                    <span class="text-sm text-gray-700 dark:text-gray-300">Email notifications</span>
+                </label>
+                <!-- <label class="flex items-center gap-2">
+                    <input type="checkbox" id="pref-browser-notif" class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-primary-600">
+                    <span class="text-sm text-gray-700 dark:text-gray-300">Browser notifications</span>
+                </label> -->
+            </div>
+            <button type="submit" class="btn-primary">Save Preferences</button>
+        </form>
+    </div>
+
+    <!-- Security Tab -->
+    <div id="tab-security" class="card p-6 space-y-5 hidden">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Change Password</h2>
+        <form onsubmit="changePassword(event)" class="space-y-4 max-w-md">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Current
+                    Password</label>
+                <input type="password" name="current_password" required class="input-field">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">New Password</label>
+                <input type="password" name="new_password" required class="input-field">
+            </div>
+            <button type="submit" class="btn-primary">Change Password</button>
+        </form>
+    </div>
+
+    <!-- Categories Tab -->
+    <div id="tab-categories" class="card p-6 space-y-5 hidden">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Custom Categories</h2>
+            <button onclick="showAddCategoryModal()" class="btn-primary text-sm">
+                <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Add Category
+            </button>
+        </div>
+        <div id="categories-list" class="space-y-2">
+        </div>
+    </div>
+
+    <!-- Data Tab -->
+    <div id="tab-data" class="card p-6 space-y-5 hidden">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Data Management</h2>
+
+        <!-- Export -->
+        <div>
+            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Export</h3>
+            <button onclick="exportData()" class="btn-secondary">
+                <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Export All Data (JSON)
+            </button>
+        </div>
+
+        <!-- Admin Only: Backup & Restore -->
+        <div id="admin-backup-section" class="hidden border-t border-gray-200 dark:border-gray-700 pt-5">
+            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Backup & Restore (Admin Only)</h3>
+            <div class="grid sm:grid-cols-2 gap-4 mb-5">
+                <button onclick="createBackup()" class="btn-secondary">
+                    <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                    </svg>
+                    Download Backup (.db)
+                </button>
+            </div>
+            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Restore Backup</h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Upload a previously downloaded .db backup file to
+                restore all data. A safety backup of your current data will be created automatically.</p>
+            <form onsubmit="handleRestoreBackup(event)" class="space-y-3">
+                <div>
+                    <input type="file" name="backup_file" accept=".db" required
+                        class="input-field text-sm file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 dark:file:bg-primary-900/20 dark:file:text-primary-400 hover:file:bg-primary-100">
+                </div>
+                <div>
+                    <input type="password" name="password" required placeholder="Enter your password to confirm"
+                        class="input-field">
+                </div>
+                <button type="submit" class="btn-secondary">
+                    <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    Restore Backup
+                </button>
+            </form>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="border-t border-gray-200 dark:border-gray-700 pt-5">
+            <h3 class="text-lg font-semibold text-danger mb-2">Danger Zone</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Permanently delete your account and all associated
+                data. This action cannot be undone.</p>
+            <button onclick="requestDeleteAccount()" class="btn-danger">
+                <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Delete My Account
+            </button>
+        </div>
+    </div>
+</div>
+
+{% include 'components/modal.html' %}
+
+<script>
+    let settingsData = {};
+    let categoriesData = [];
+
+    document.addEventListener('DOMContentLoaded', function () {
+        setPageTitle('Settings');
+        loadSettings();
+        loadUser();
+    });
+
+    function showTab(tab) {
+        document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
+        document.getElementById(`tab-${tab}`).classList.remove('hidden');
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active', 'border-primary-600', 'text-primary-600');
+            btn.classList.add('border-transparent', 'text-gray-500');
+        });
+        event.target.classList.add('active', 'border-primary-600', 'text-primary-600');
+        event.target.classList.remove('border-transparent', 'text-gray-500');
+
+        if (tab === 'categories') loadCategories();
+    }
+
+    function loadUser() {
+        const user = api.getUser();
+        if (user) {
+            document.getElementById('profile-name').value = user.name || '';
+            document.getElementById('profile-email').value = user.email || '';
+            // Show backup/restore section only for admins
+            if (user.role === 'admin') {
+                document.getElementById('admin-backup-section').classList.remove('hidden');
+            }
+        }
+    }
+
+    async function loadSettings() {
+        try {
+            const result = await api.get('/settings');
+            settingsData = result.data;
+
+            document.getElementById('pref-currency').value = settingsData.currency || 'INR';
+            document.getElementById('pref-theme').value = settingsData.theme || 'dark';
+            document.getElementById('pref-dateformat').value = settingsData.date_format || 'DD/MM/YYYY';
+            document.getElementById('pref-timezone').value = settingsData.timezone || 'Asia/Kolkata';
+            document.getElementById('pref-email-notif').checked = settingsData.notification_email !== false;
+            document.getElementById('pref-browser-notif').checked = settingsData.notification_browser !== false;
+        } catch (e) { }
+    }
+
+    async function loadCategories() {
+        try {
+            const result = await api.get('/settings/categories');
+            categoriesData = result.data.filter(c => !c.is_default);
+            renderCategories();
+        } catch (e) { }
+    }
+
+    function renderCategories() {
+        const list = document.getElementById('categories-list');
+        if (categoriesData.length === 0) {
+            list.innerHTML = '<p class="text-gray-500 text-sm">No custom categories. Default categories are automatically available.</p>';
+            return;
+        }
+
+        list.innerHTML = categoriesData.map(c => `
+        <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-surface-dark">
+            <div>
+                <p class="text-sm font-medium text-gray-900 dark:text-white">${c.name}</p>
+                <p class="text-xs text-gray-500 capitalize">${c.type}</p>
+            </div>
+            <button onclick="deleteCategory(${c.id})" class="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/20">
+                <svg class="w-4 h-4 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+            </button>
+        </div>
+    `).join('');
+    }
+
+    function showAddCategoryModal() {
+        openModal('Add Category', `
+        <form onsubmit="addCategory(event)" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Name</label>
+                <input type="text" name="name" required class="input-field">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Type</label>
+                <select name="type" required class="input-field">
+                    <option value="expense">Expense</option>
+                    <option value="income">Income</option>
+                </select>
+            </div>
+            <div class="flex items-center justify-end gap-3">
+                <button type="button" onclick="closeModal()" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Add</button>
+            </div>
+        </form>
+    `);
+    }
+
+    async function updateProfile(e) {
+        e.preventDefault();
+        try {
+            const name = document.getElementById('profile-name').value.trim();
+            await api.put('/settings', { name: name });
+            const user = api.getUser();
+            if (user) {
+                user.name = name;
+                api.setUser(user);
+            }
+            showFlash('Profile updated', 'success');
+        } catch (e) {
+            showFlash('Failed to update profile', 'error');
+        }
+    }
+
+    async function updatePreferences(e) {
+        e.preventDefault();
+        try {
+            await api.put('/settings', {
+                currency: document.getElementById('pref-currency').value,
+                theme: document.getElementById('pref-theme').value,
+                date_format: document.getElementById('pref-dateformat').value,
+                timezone: document.getElementById('pref-timezone').value,
+                notification_email: document.getElementById('pref-email-notif').checked,
+                notification_browser: document.getElementById('pref-browser-notif').checked,
+            });
+            showFlash('Preferences saved', 'success');
+        } catch (e) {
+            showFlash('Failed to save', 'error');
+        }
+    }
+
+    async function changePassword(e) {
+        e.preventDefault();
+        const form = e.target;
+        try {
+            await api.post('/settings/change-password', {
+                current_password: form.current_password.value,
+                new_password: form.new_password.value,
+            });
+            showFlash('Password changed!', 'success');
+            form.reset();
+        } catch (error) {
+            showFlash(error.error?.message || 'Failed', 'error');
+        }
+    }
+
+    async function addCategory(e) {
+        e.preventDefault();
+        const form = e.target;
+        try {
+            await api.post('/settings/categories', {
+                name: form.name.value.trim(),
+                type: form.type.value,
+            });
+            closeModal();
+            showFlash('Category added', 'success');
+            loadCategories();
+        } catch (error) {
+            showFlash(error.error?.message || 'Failed', 'error');
+        }
+    }
+
+    async function deleteCategory(id) {
+        try {
+            await api.delete(`/settings/categories/${id}`);
+            showFlash('Category deleted', 'success');
+            loadCategories();
+        } catch (e) {
+            showFlash('Failed to delete', 'error');
+        }
+    }
+
+    async function exportData() {
+        try {
+            const result = await api.post('/settings/export-data');
+            const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `financetrack_export_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showFlash('Data exported', 'success');
+        } catch (e) {
+            showFlash('Failed to export', 'error');
+        }
+    }
+
+    async function createBackup() {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/v1/settings/backup', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error('Backup failed');
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `financetrack_backup_${new Date().toISOString().split('T')[0]}.db`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showFlash('Backup downloaded!', 'success');
+        } catch (e) {
+            showFlash('Failed to create backup', 'error');
+        }
+    }
+
+    async function handleRestoreBackup(e) {
+        e.preventDefault();
+        const form = e.target;
+        const fileInput = form.querySelector('input[type="file"]');
+        const passwordInput = form.querySelector('input[type="password"]');
+        const btn = form.querySelector('button[type="submit"]');
+        const originalText = btn.innerHTML;
+
+        if (!fileInput.files[0]) {
+            showFlash('Please select a backup file', 'error');
+            return;
+        }
+
+        confirmAction('Restoring a backup will replace ALL current data. A safety backup of your current data will be created first. Continue?', async () => {
+            btn.disabled = true;
+            btn.innerHTML = '<svg class="w-4 h-4 inline-block mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Restoring...';
+
+            try {
+                const token = localStorage.getItem('token');
+                const formData = new FormData();
+                formData.append('backup_file', fileInput.files[0]);
+                formData.append('password', passwordInput.value);
+
+                const response = await fetch('/api/v1/settings/restore-backup', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData,
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showFlash('Backup restored! Logging out...', 'success');
+                    setTimeout(() => {
+                        api.clearToken();
+                        window.location.href = '/login';
+                    }, 2000);
+                } else {
+                    showFlash(result.error?.message || 'Failed to restore backup', 'error');
+                }
+            } catch (e) {
+                showFlash('Failed to restore backup', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
+    }
+
+    // Delete Account Flow
+    function requestDeleteAccount() {
+        openModal('Delete Account', `
+        <div class="space-y-4">
+            <div class="p-4 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800">
+                <p class="text-sm text-red-800 dark:text-red-300 font-medium">This will permanently delete:</p>
+                <ul class="text-xs text-red-700 dark:text-red-400 mt-2 space-y-1 list-disc list-inside">
+                    <li>All your expenses and income records</li>
+                    <li>All your accounts and balances</li>
+                    <li>All your goals and savings pots</li>
+                    <li>All your budgets and recurring transactions</li>
+                    <li>All your settings and notifications</li>
+                </ul>
+            </div>
+            <p class="text-sm text-gray-600 dark:text-gray-400">An OTP will be sent to your email for verification.</p>
+            <div class="flex items-center justify-end gap-3">
+                <button type="button" onclick="closeModal()" class="btn-secondary">Cancel</button>
+                <button type="button" onclick="sendDeleteOtp()" class="btn-danger">Send OTP</button>
+            </div>
+        </div>
+    `);
+    }
+
+    async function sendDeleteOtp() {
+        try {
+            await api.post('/settings/request-delete-otp');
+            closeModal();
+            showDeleteOtpModal();
+        } catch (e) {
+            showFlash('Failed to send OTP', 'error');
+        }
+    }
+
+    function showDeleteOtpModal() {
+        openModal('Verify Deletion', `
+        <form onsubmit="confirmDeleteAccount(event)" class="space-y-4">
+            <p class="text-sm text-gray-600 dark:text-gray-400">Enter the OTP sent to your email and your password to confirm account deletion.</p>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">OTP Code</label>
+                <div class="flex justify-center gap-2">
+                    <input type="text" name="otp" maxlength="1" class="w-10 h-10 text-center text-lg font-bold input-field" required>
+                    <input type="text" name="otp" maxlength="1" class="w-10 h-10 text-center text-lg font-bold input-field" required>
+                    <input type="text" name="otp" maxlength="1" class="w-10 h-10 text-center text-lg font-bold input-field" required>
+                    <input type="text" name="otp" maxlength="1" class="w-10 h-10 text-center text-lg font-bold input-field" required>
+                    <input type="text" name="otp" maxlength="1" class="w-10 h-10 text-center text-lg font-bold input-field" required>
+                    <input type="text" name="otp" maxlength="1" class="w-10 h-10 text-center text-lg font-bold input-field" required>
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Your Password</label>
+                <input type="password" name="password" required placeholder="Enter your password" class="input-field">
+            </div>
+            <div class="flex items-center justify-end gap-3">
+                <button type="button" onclick="closeModal()" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-danger">Delete Account Permanently</button>
+            </div>
+        </form>
+    `);
+
+        // Init OTP inputs
+        const inputs = document.querySelectorAll('#modal-body input[name="otp"]');
+        inputs.forEach((input, index) => {
+            input.addEventListener('input', function () {
+                if (this.value.length === 1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            });
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Backspace' && !this.value && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+        });
+        if (inputs.length > 0) inputs[0].focus();
+    }
+
+    async function confirmDeleteAccount(e) {
+        e.preventDefault();
+        const form = e.target;
+        const otpInputs = form.querySelectorAll('input[name="otp"]');
+        const otp = Array.from(otpInputs).map(i => i.value).join('');
+        const password = form.password.value;
+
+        if (otp.length !== 6) {
+            showFlash('Please enter all 6 OTP digits', 'error');
+            return;
+        }
+
+        try {
+            await api.post('/settings/delete-account', { password, otp });
+            closeModal();
+            api.clearToken();
+            showFlash('Account deleted successfully', 'success');
+            setTimeout(() => window.location.href = '/', 2000);
+        } catch (e) {
+            showFlash(e.error?.message || 'Failed to delete account', 'error');
+        }
+    }
+</script>
+{% endblock %}

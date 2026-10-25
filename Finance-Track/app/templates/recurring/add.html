@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Add Recurring Transaction - FinanceTrack{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+        <a href="/recurring" class="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Back to Recurring
+        </a>
+    </div>
+
+    <div class="card p-6 sm:p-8">
+        <h1 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Add Recurring Transaction</h1>
+
+        <form onsubmit="handleSubmit(event)" class="space-y-5">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Type *</label>
+                <div class="flex gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="type" value="expense" checked class="text-primary-600 focus:ring-primary-500">
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Expense</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="type" value="income" class="text-primary-600 focus:ring-primary-500">
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Income</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Title *</label>
+                    <input type="text" name="title" required placeholder="e.g., House Rent, Netflix" class="input-field">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Amount *</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                        <input type="number" name="amount" step="0.01" min="0.01" required placeholder="0.00" class="input-field pl-8">
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Frequency *</label>
+                    <select name="frequency" required class="input-field">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly" selected>Monthly</option>
+                        <option value="quarterly">Quarterly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Category</label>
+                    <select name="category_id" class="input-field">
+                        <option value="">Select Category</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Start Date *</label>
+                    <input type="date" name="start_date" required class="input-field">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">End Date (Optional)</label>
+                    <input type="date" name="end_date" class="input-field">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Payment Method *</label>
+                    <select name="payment_method" required class="input-field">
+                        <option value="Cash">Cash</option>
+                        <option value="Credit Card">Credit Card</option>
+                        <option value="Debit Card">Debit Card</option>
+                        <option value="UPI">UPI</option>
+                        <option value="Net Banking">Net Banking</option>
+                        <option value="Auto Debit">Auto Debit</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Account</label>
+                    <select name="account_id" class="input-field">
+                        <option value="">Select Account (Optional)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Reminder Days Before</label>
+                    <input type="number" name="reminder_days_before" value="3" min="0" max="30" class="input-field">
+                </div>
+                <div class="flex items-center gap-3 pt-6">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="auto_add" checked class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500">
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Auto-add transaction</span>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Notes</label>
+                <textarea name="notes" rows="3" placeholder="Add any notes..." class="input-field"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <a href="/recurring" class="btn-secondary">Cancel</a>
+                <button type="submit" class="btn-primary">
+                    <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Save Recurring
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    setPageTitle('Add Recurring');
+    document.querySelector('input[name="start_date"]').value = new Date().toISOString().split('T')[0];
+    await Promise.all([loadCategories(), loadAccounts()]);
+});
+
+async function loadCategories() {
+    try {
+        const result = await api.get('/settings/categories');
+        const select = document.querySelector('select[name="category_id"]');
+        result.data.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat.id;
+            opt.textContent = cat.name;
+            select.appendChild(opt);
+        });
+    } catch (e) {}
+}
+
+async function loadAccounts() {
+    try {
+        const result = await api.get('/accounts');
+        const select = document.querySelector('select[name="account_id"]');
+        result.data.forEach(acc => {
+            const opt = document.createElement('option');
+            opt.value = acc.id;
+            opt.textContent = acc.name;
+            select.appendChild(opt);
+        });
+    } catch (e) {}
+}
+
+async function handleSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const btn = form.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML = 'Saving...';
+
+    try {
+        const data = {
+            type: form.type.value,
+            title: form.title.value.trim(),
+            amount: parseFloat(form.amount.value),
+            frequency: form.frequency.value,
+            category_id: form.category_id.value || null,
+            start_date: form.start_date.value,
+            end_date: form.end_date.value || null,
+            payment_method: form.payment_method.value,
+            account_id: form.account_id.value || null,
+            reminder_days_before: parseInt(form.reminder_days_before.value),
+            auto_add: form.auto_add.checked,
+            notes: form.notes.value || null,
+        };
+
+        await api.post('/recurring', data);
+        showFlash('Recurring transaction created!', 'success');
+        setTimeout(() => window.location.href = '/recurring', 500);
+    } catch (error) {
+        showFlash(error.error?.message || 'Failed to create', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+</script>
+{% endblock %}
